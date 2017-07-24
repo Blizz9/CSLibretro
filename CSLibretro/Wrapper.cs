@@ -9,37 +9,13 @@ namespace CSLibretro
 {
     public class Wrapper
     {
-        //private const string DLL_NAME = "snes9x_libretro.dll";
+        private const string DLL_NAME = "snes9x_libretro.dll";
         //private const string DLL_NAME = "nestopia_libretro.dll";
-        private const string DLL_NAME = "gambatte_libretro.dll";
+        //private const string DLL_NAME = "gambatte_libretro.dll";
 
-        //private const string ROM_NAME = "sf2.sfc";
+        private const string ROM_NAME = "sf2.sfc";
         //private const string ROM_NAME = "smb.nes";
-        private const string ROM_NAME = "sml.gb";
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate uint APIVersionPrototype();
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void GetSystemAVInfoPrototype(out SystemAVInfo systemAVInfo);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void GetSystemInfoPrototype(out SystemInfo systemInfo);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void InitPrototype();
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.U1)] public delegate bool LoadGamePrototype(ref GameInfo gameInfo);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void RunPrototype();
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void SetAudioSamplePrototype([MarshalAs(UnmanagedType.FunctionPtr)]AudioSampleHandler audioSampleHandler);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void SetAudioSampleBatchPrototype([MarshalAs(UnmanagedType.FunctionPtr)]AudioSampleBatchHandler audioSampleBatchHandler);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void SetEnvironmentPrototype([MarshalAs(UnmanagedType.FunctionPtr)]EnvironmentHandler environmentHandler);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void SetInputPollPrototype([MarshalAs(UnmanagedType.FunctionPtr)]InputPollHandler inputPollHandler);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void SetInputStatePrototype([MarshalAs(UnmanagedType.FunctionPtr)]InputStateHandler inputStateHandler);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void SetVideoRefreshPrototype([MarshalAs(UnmanagedType.FunctionPtr)]VideoRefreshHandler videoRefreshHandler);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void AudioSampleHandler(short left, short right);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void AudioSampleBatchHandler(IntPtr data, UIntPtr frames);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] [return: MarshalAs(UnmanagedType.U1)] public delegate bool EnvironmentHandler(uint command, IntPtr data);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void InputPollHandler();
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void InputStateHandler(uint port, uint device, uint index, uint id);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void LogHandler(int level, IntPtr fmt, params IntPtr[] arguments); // ??? this may be able to be used instead ???
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void VideoRefreshHandler(IntPtr data, uint width, uint height, UIntPtr pitch);
-
-        private IntPtr _libretroDLL;
-        private long _frameCount;
+        //private const string ROM_NAME = "sml.gb";
 
         private APIVersionPrototype _apiVersion;
         private GetSystemAVInfoPrototype _getSystemAVInfo;
@@ -54,9 +30,12 @@ namespace CSLibretro
         private SetInputStatePrototype _setInputState;
         private SetVideoRefreshPrototype _setVideoRefresh;
 
+        private IntPtr _libretroDLL;
+        private long _frameCount;
+
         public Wrapper()
         {
-            _libretroDLL = LoadLibrary(DLL_NAME);
+            _libretroDLL = Win32API.LoadLibrary(DLL_NAME);
 
             _apiVersion = getDelegate<APIVersionPrototype>("retro_api_version");
             _getSystemAVInfo = getDelegate<GetSystemAVInfoPrototype>("retro_get_system_av_info");
@@ -153,7 +132,7 @@ namespace CSLibretro
 
             while (true)
             {
-                int length = _snprintf(logMessage, new IntPtr(logMessage.Capacity), fmt, arguments);
+                int length = Win32API._snprintf(logMessage, new IntPtr(logMessage.Capacity), fmt, arguments);
 
                 if ((length <= 0) || (length >= logMessage.Capacity))
                 {
@@ -180,32 +159,13 @@ namespace CSLibretro
 
         #endregion
 
-        #region Win32 API
-
-        [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-        public static extern IntPtr LoadLibrary(string dllPath);
-
-        [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-        public static extern IntPtr GetProcAddress(IntPtr dll, string methodName);
-
-        [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int _snprintf([MarshalAs(UnmanagedType.LPStr)] StringBuilder buffer, IntPtr count, IntPtr format, params IntPtr[] arguments);
-
-        #endregion
-
         #region Delegates
 
         private T getDelegate<T>(string functionName)
         {
-            return ((T)Convert.ChangeType(Marshal.GetDelegateForFunctionPointer(GetProcAddress(_libretroDLL, functionName), typeof(T)), typeof(T)));
+            return ((T)Convert.ChangeType(Marshal.GetDelegateForFunctionPointer(Win32API.GetProcAddress(_libretroDLL, functionName), typeof(T)), typeof(T)));
         }
 
         #endregion
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct LogCallback
-        {
-            public LogHandler Log;
-        }
     }
 }

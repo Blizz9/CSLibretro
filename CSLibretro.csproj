@@ -57,6 +57,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CSLibretro\Delegates.cs" />
+    <Compile Include="CSLibretro\GameGeometry.cs" />
+    <Compile Include="CSLibretro\GameInfo.cs" />
+    <Compile Include="CSLibretro\LogCallback.cs" />
+    <Compile Include="CSLibretro\SystemAVInfo.cs" />
+    <Compile Include="CSLibretro\SystemInfo.cs" />
+    <Compile Include="CSLibretro\SystemTiming.cs" />
+    <Compile Include="CSLibretro\Win32API.cs" />
     <Compile Include="CSLibretro\Wrapper.cs" />
     <Compile Include="Reference\tinygui.cs" />
     <Page Include="MainWindow.xaml">
@@ -74,7 +82,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
