@@ -593,17 +593,17 @@ class Libretro {
 		Minsize8  = (3 << 24)
 	}
 	
-	unsafe public struct memory_descriptor
-	{
-		public ulong flags;
-		public byte* ptr;
-		public ulong offset;
-		public ulong start;
-		public ulong select;
-		public ulong disconnect;
-		public ulong len;
-		public string addrspace;
-	};
+	//unsafe public struct memory_descriptor
+	//{
+	//	public ulong flags;
+	//	public byte* ptr;
+	//	public ulong offset;
+	//	public ulong start;
+	//	public ulong select;
+	//	public ulong disconnect;
+	//	public ulong len;
+	//	public string addrspace;
+	//};
 	
 	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
 	public struct controller_description
@@ -1076,15 +1076,15 @@ class Libretro {
 	
 	public void serialize(byte[] data)
 	{
-		unsafe {
-			fixed (byte* p = data)
-			{
-				if (!raw.serialize((IntPtr)p, new UIntPtr((uint)data.Length)))
-				{
-					throw new InvalidOperationException("Serialization failed");
-				}
-			}
-		}
+		//unsafe {
+		//	fixed (byte* p = data)
+		//	{
+		//		if (!raw.serialize((IntPtr)p, new UIntPtr((uint)data.Length)))
+		//		{
+		//			throw new InvalidOperationException("Serialization failed");
+		//		}
+		//	}
+		//}
 	}
 	
 	public byte[] serialize()
@@ -1096,15 +1096,15 @@ class Libretro {
 	
 	public void unserialize(byte[] data)
 	{
-		unsafe {
-			fixed (byte* p = data)
-			{
-				if (!raw.unserialize((IntPtr)p, new UIntPtr((uint)data.Length)))
-				{
-					throw new InvalidOperationException("Unserialization failed");
-				}
-			}
-		}
+		//unsafe {
+		//	fixed (byte* p = data)
+		//	{
+		//		if (!raw.unserialize((IntPtr)p, new UIntPtr((uint)data.Length)))
+		//		{
+		//			throw new InvalidOperationException("Unserialization failed");
+		//		}
+		//	}
+		//}
 	}
 	
 	public void cheat_reset()
@@ -1120,18 +1120,18 @@ class Libretro {
 	{
 		if (game.data != null)
 		{
-			unsafe
-			{
-				fixed(byte* bytes = game.data)
-				{
-					Raw.game_info rawgame;
-					rawgame.path = game.path;
-					rawgame.data = new IntPtr(bytes);
-					rawgame.size = new UIntPtr((uint)game.data.Length);
-					rawgame.meta = game.meta;
-					raw.load_game(ref rawgame);
-				}
-			}
+			//unsafe
+			//{
+			//	fixed(byte* bytes = game.data)
+			//	{
+			//		Raw.game_info rawgame;
+			//		rawgame.path = game.path;
+			//		rawgame.data = new IntPtr(bytes);
+			//		rawgame.size = new UIntPtr((uint)game.data.Length);
+			//		rawgame.meta = game.meta;
+			//		raw.load_game(ref rawgame);
+			//	}
+			//}
 		}
 		else
 		{
@@ -1159,10 +1159,10 @@ class Libretro {
 		return (Region)raw.get_region();
 	}
 	
-	public unsafe byte* get_memory_data(uint id)
-	{
-		return (byte*)raw.get_memory_data(id).ToPointer();
-	}
+	//public unsafe byte* get_memory_data(uint id)
+	//{
+	//	return (byte*)raw.get_memory_data(id).ToPointer();
+	//}
 	public ulong get_memory_size(uint id)
 	{
 		return raw.get_memory_size(id).ToUInt64();
@@ -1259,11 +1259,11 @@ class Libretro {
 	
 	void i_video(IntPtr data, uint width, uint height, UIntPtr pitch)
 	{
-		video_cb(data, width, height, pitch.ToUInt32());
+		//video_cb(data, width, height, pitch.ToUInt32());
 	}
 	
-	public unsafe delegate void video_cb_t(IntPtr data, uint width, uint height, uint pitch);
-	public video_cb_t video_cb;
+	//public unsafe delegate void video_cb_t(IntPtr data, uint width, uint height, uint pitch);
+	//public video_cb_t video_cb;
 	
 	void i_audio(short left, short right)
 	{
@@ -1271,13 +1271,13 @@ class Libretro {
 		else
 		{
 			short[] data={left, right};
-			unsafe
-			{
-				fixed(short* dataptr = data)
-				{
-					audio_batch_cb(new IntPtr(dataptr), 1);
-				}
-			}
+			//unsafe
+			//{
+			//	fixed(short* dataptr = data)
+			//	{
+			//		audio_batch_cb(new IntPtr(dataptr), 1);
+			//	}
+			//}
 		}
 	}
 	
@@ -1288,22 +1288,22 @@ class Libretro {
 	{
 		ulong nframes = frames.ToUInt64();
 		
-		if (audio_batch_cb != null) audio_batch_cb(data, nframes);
-		else
-		{
-			unsafe {
-				short* ptr = (short*)data.ToPointer();
+		//if (audio_batch_cb != null) audio_batch_cb(data, nframes);
+		//else
+		//{
+		//	//unsafe {
+		//	//	short* ptr = (short*)data.ToPointer();
 				
-				for (ulong i=0;i<nframes;i++)
-				{
-					audio_cb(ptr[i*2], ptr[i*2+1]);
-				}
-			}
-		}
+		//	//	for (ulong i=0;i<nframes;i++)
+		//	//	{
+		//	//		audio_cb(ptr[i*2], ptr[i*2+1]);
+		//	//	}
+		//	//}
+		//}
 	}
 	
-	public unsafe delegate void audio_batch_cb_t(IntPtr data, ulong frames);
-	public audio_batch_cb_t audio_batch_cb;
+	//public unsafe delegate void audio_batch_cb_t(IntPtr data, ulong frames);
+	//public audio_batch_cb_t audio_batch_cb;
 	
 	void i_input_poll()
 	{

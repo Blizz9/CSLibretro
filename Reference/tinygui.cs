@@ -14,8 +14,8 @@ class TinyGUI
         //Libretro core = new Libretro("nestopia_libretro.dll");
 
         core.log_cb = log;
-		core.video_cb = video;
-		core.audio_batch_cb = audio;
+		//core.video_cb = video;
+		//core.audio_batch_cb = audio;
 		core.input_state_cb = input;
 		core.init();
 

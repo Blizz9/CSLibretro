@@ -10,16 +10,14 @@ namespace CSLibretro
 {
     public partial class MainWindow : Window
     {
+        private Wrapper _csLibretroWrapper;
+
         public MainWindow()
         {
             InitializeComponent();
 
-            Task task = Task.Run((Action)runProgram);
-        }
-
-        private void runProgram()
-        {
-            Program.MainBak(this);
+            _csLibretroWrapper = new Wrapper();
+            Task task = Task.Run(new Action(() => { _csLibretroWrapper.Run(); }));
         }
 
         public void SetScreen(Bitmap bitmap)

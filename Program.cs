@@ -191,7 +191,7 @@ namespace CSLibretro
         public IntPtr Data;
         public UIntPtr Size;
         public string Meta;
-    };
+    }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct SystemInfo
@@ -205,14 +205,14 @@ namespace CSLibretro
         public string LibraryName;
         public string LibraryVersion;
         public string ValidExtensions;
-    };
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct SystemAVInfo
     {
         [MarshalAs(UnmanagedType.Struct)] public GameGeometry Geometry;
         [MarshalAs(UnmanagedType.Struct)] public SystemTiming Timing;
-    };
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct GameGeometry
@@ -222,12 +222,12 @@ namespace CSLibretro
         public uint MaxWidth;
         public uint MaxHeight;
         public float AspectRatio;
-    };
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct SystemTiming
     {
         public double FPS;
         public double SampleRate;
-    };
+    }
 }
