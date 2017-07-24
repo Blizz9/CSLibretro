@@ -1,11 +1,10 @@
-﻿using CSLibretro;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace libretro
+namespace CSLibretro
 {
     public static class Program
     {
@@ -14,9 +13,6 @@ namespace libretro
 
         [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         public static extern IntPtr GetProcAddress(IntPtr dll, string methodName);
-
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr memcpy(IntPtr dest, IntPtr src, UIntPtr count);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate uint APIVersionDelegate();
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void AudioSampleDelegate(short left, short right);
@@ -79,7 +75,6 @@ namespace libretro
             //log_cb((LogLevel)level, sb.ToString());
         }
 
-        [STAThread]
         public static void MainBak(MainWindow mainWindow)
         {
             _mainWindow = mainWindow;
@@ -134,20 +129,6 @@ namespace libretro
                 run();
                 _frameCount++;
             }
-
-            //Libretro.Raw.load_game_t temp;
-            //temp = (Libretro.Raw.load_game_t)LoadFromDLL("retro_load_game", typeof(Libretro.Raw.load_game_t), dll);
-
-            //Libretro.Raw.game_info rawgame;
-            //rawgame.path = "smw.smc";
-            //rawgame.data = IntPtr.Zero;
-            //rawgame.size = UIntPtr.Zero;
-            //rawgame.meta = null;
-            //temp(ref rawgame);
-
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new Form1());
         }
 
         private static bool environmentCallback(uint command, IntPtr data)
@@ -167,114 +148,12 @@ namespace libretro
 
         private static void videoRefreshCallback(IntPtr data, uint width, uint height, UIntPtr pitch)
         {
-            /*
-            Debug.WriteLine(string.Format("Video Refresh: {0} | {1} | {2} | {3}", data, width, height, pitch));
-
-            //try
-            //{
-                //LockedData target = surf_back.Lock(LockFlags.WriteOnly);
-                //System.Console.WriteLine(target.Pitch);
-                uint rowwidth = 2u * width;
-            //video_copy(target.Data.InternalData, (uint)target.Pitch, data, pitch, rowwidth, height);
-                    void video_copy(IntPtr dst, uint dstpitch, IntPtr src, uint srcpitch, uint rowlen, uint height)
-                    {
-                        ulong dst_i = (ulong)dst.ToInt64();
-                        ulong src_i = (ulong)src.ToInt64();
-                        for (uint i = 0; i < height; i++)
-                        {
-                            //System.Diagnostics.Debug.WriteLine("Copying row " + i);
-
-                            //try
-                            //{
-                            memcpy(new IntPtr((long)(dst_i + dstpitch * i)), new IntPtr((long)(src_i + srcpitch * i)), new UIntPtr(rowlen));
-                            //}
-                            //catch (Exception e)
-                            //{
-                            //System.Diagnostics.Debug.Write("EHRE");
-                            //}
-                        }
-                    }
-
-            IntPtr target = Marshal.AllocHGlobal((int)(rowwidth * height));
-
-            ulong destination = (ulong)target.ToInt64();
-            ulong source = (ulong)data.ToInt64();
-
-            for (uint i = 0; i < height; i++)
-            {
-                //System.Diagnostics.Debug.WriteLine("Copying row " + i);
-
-                //try
-                //{
-                memcpy(new IntPtr((long)(destination + (uint)rowwidth * i)), new IntPtr((long)(source + (uint)rowwidth * i)), new UIntPtr(rowwidth));
-                //}
-                //catch (Exception e)
-                //{
-                //System.Diagnostics.Debug.Write("EHRE");
-                //}
-            }
-
-            byte[] buffer = new byte[rowwidth * height * 2];
-            //Marshal.Copy(buffer, 0, target, buffer.Length);
-            //Marshal.Copy(target, buffer, 0, buffer.Length);
-            Marshal.Copy(data, buffer, 0, buffer.Length);
-            //Marshal.FreeHGlobal(target);
-
-            if (buffer.Where(v => v != 0).Any())
-            {
-                //for (int i = 0; i < buffer.Length; i++)
-                //{
-                //    if (buffer[i] != 0)
-                //        Debug.WriteLine("YAY!");
-                //}
-
-                Bitmap bmp;
-                using (var ms = new MemoryStream(buffer))
-                {
-                    //bmp = new Bitmap((int)width, (int)height, PixelFormat.Format16bppArgb1555);
-                    //bmp = new Bitmap((int)width, (int)height, 1024, PixelFormat.Format16bppArgb1555, Marshal.UnsafeAddrOfPinnedArrayElement(buffer, 0));
-                    bmp = new Bitmap((int)width, (int)height, 1024, PixelFormat.Format16bppArgb1555, data);
-                    bmp.Save("output.jpg", ImageFormat.Jpeg);
-                }
-            }
-            */
-
-            //if (_frameCount % 20 == 0)
+            //if (_frameCount % 60 == 0)
             //{
                 Bitmap bitmap = new Bitmap((int)width, (int)height, (int)pitch, PixelFormat.Format16bppArgb1555, data);
                 //bitmap.Save("output" + _frameCount / 60 + ".bmp", ImageFormat.Bmp);
                 _mainWindow.SetScreen(bitmap);
             //}
-
-            //System.Drawing.Imaging.PixelFormat.Format16bppArgb1555
-            //Marshal.Copy(bytes, 0, unmanagedPointer, bytes.Length);
-            // Call unmanaged code
-            //Marshal.FreeHGlobal(unmanagedPointer);
-
-            //surf_back.Unlock();
-
-            //surf_front.Draw(surf_back, DrawFlags.Wait);
-            //}
-            //catch (WasStillDrawingException)
-            //{
-            //    return;
-            //}
-            //catch (SurfaceLostException)
-            //{
-            //display.RestoreAllSurfaces();
-            //}
-
-            //uint rowwidth = (pixfmt == Libretro.pixel_format.XRGB8888 ? 4u : 2u) * width;
-
-            //byte[] buffer = new byte[200];
-            //221178
-
-            //IntPtr unmanagedPointer = Marshal.AllocHGlobal(buffer.Length);
-
-            //video_copy(data, pitch, data, pitch, rowwidth, height);
-
-            //Marshal.Copy(buffer, 0, data, buffer.Length);
-            //Marshal.FreeHGlobal(unmanagedPointer);
         }
 
         private static void audioSampleCallback(short left, short right)
@@ -320,7 +199,7 @@ namespace libretro
         public IntPtr LibraryNamePointer;
         public IntPtr LibraryVersionPointer;
         public IntPtr ValidExtensionsPointer;
-        //[MarshalAs(UnmanagedType.LPStr)] public string LibraryName;
+        //[MarshalAs(UnmanagedType.LPStr)] public string LibraryName; // <-- I still think there is a way to make this work
         [MarshalAs(UnmanagedType.U1)] public bool NeedFullpath;
         [MarshalAs(UnmanagedType.U1)] public bool BlockExtract;
         public string LibraryName;
@@ -331,10 +210,8 @@ namespace libretro
     [StructLayout(LayoutKind.Sequential)]
     public struct SystemAVInfo
     {
-        [MarshalAs(UnmanagedType.Struct)]
-        public GameGeometry Geometry;
-        [MarshalAs(UnmanagedType.Struct)]
-        public SystemTiming Timing;
+        [MarshalAs(UnmanagedType.Struct)] public GameGeometry Geometry;
+        [MarshalAs(UnmanagedType.Struct)] public SystemTiming Timing;
     };
 
     [StructLayout(LayoutKind.Sequential)]

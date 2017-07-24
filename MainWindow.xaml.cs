@@ -1,5 +1,4 @@
-﻿using libretro;
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -16,24 +15,6 @@ namespace CSLibretro
             InitializeComponent();
 
             Task task = Task.Run((Action)runProgram);
-
-            //using (var memory = new MemoryStream())
-            //{
-            //    bitmap.Save(memory, ImageFormat.Png);
-            //    memory.Position = 0;
-
-            //    var bitmapImage = new BitmapImage();
-            //    bitmapImage.BeginInit();
-            //    bitmapImage.StreamSource = memory;
-            //    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-            //    bitmapImage.EndInit();
-
-            //    return bitmapImage;
-            //}
-
-            //BitmapImage bmpi = new BitmapImage(); bmpi.BeginInit(); bmpi.StreamSource = new MemoryStream(ByteArray); bmpi.EndInit(); image1.Source = bmpi;
-
-            //_screen.Source = new BitmapImage()
         }
 
         private void runProgram()
