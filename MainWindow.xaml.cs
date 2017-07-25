@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
 namespace CSLibretro
@@ -16,30 +18,43 @@ namespace CSLibretro
         {
             InitializeComponent();
 
-            _csLibretroWrapper = new Wrapper();
+            _csLibretroWrapper = new Wrapper(SetScreen, GetInputs);
             Task task = Task.Run(new Action(() => { _csLibretroWrapper.Run(); }));
         }
 
         public void SetScreen(Bitmap bitmap)
         {
-            Application.Current.Dispatcher.Invoke(new Action(() => { setScreen(bitmap); }));
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    bitmap.Save(memoryStream, ImageFormat.Png);
+                    memoryStream.Position = 0;
+
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.StreamSource = memoryStream;
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.EndInit();
+
+                    _screen.Source = bitmapImage;
+                }
+            }));
         }
 
-        private void setScreen(Bitmap bitmap)
+        public void GetInputs(List<Tuple<Key, int, bool>> inputs)
         {
-            using (MemoryStream memoryStream = new MemoryStream())
+            Application.Current.Dispatcher.Invoke(new Action(() =>
             {
-                bitmap.Save(memoryStream, ImageFormat.Bmp);
-                memoryStream.Position = 0;
-
-                BitmapImage bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memoryStream;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-
-                _screen.Source = bitmapImage;
-            }
+                for (int i = (inputs.Count - 1); i >= 0; i--)
+                {
+                    if (Keyboard.IsKeyDown(inputs[i].Item1))
+                    {
+                        inputs.Add(new Tuple<Key, int, bool>(inputs[i].Item1, inputs[i].Item2, true));
+                        inputs.RemoveAt(i);
+                    }
+                }
+            }));
         }
     }
 }

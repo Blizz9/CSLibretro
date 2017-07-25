@@ -56,7 +56,7 @@ namespace CSLibretro
     public delegate void InputPollHandler();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void InputStateHandler(uint port, uint device, uint index, uint id);
+    public delegate short InputStateHandler(uint port, uint device, uint index, uint id);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void LogHandler(int level, IntPtr fmt, params IntPtr[] arguments);

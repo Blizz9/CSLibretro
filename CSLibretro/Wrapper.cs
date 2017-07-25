@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Windows.Input;
 
 namespace CSLibretro
 {
@@ -13,10 +16,10 @@ namespace CSLibretro
         //private const string DLL_NAME = "nestopia_libretro.dll";
         //private const string DLL_NAME = "gambatte_libretro.dll";
 
-        private const string ROM_NAME = "sf2.sfc";
+        private const string ROM_NAME = "smw.sfc";
         //private const string ROM_NAME = "smb.nes";
         //private const string ROM_NAME = "sml.gb";
-
+        
         private APIVersionPrototype _apiVersion;
         private GetSystemAVInfoPrototype _getSystemAVInfo;
         private GetSystemInfoPrototype _getSystemInfo;
@@ -31,10 +34,22 @@ namespace CSLibretro
         private SetVideoRefreshPrototype _setVideoRefresh;
 
         private IntPtr _libretroDLL;
-        private long _frameCount;
 
-        public Wrapper()
+        private Action<Bitmap> _frameCallback;
+        private Action<List<Tuple<Key, int, bool>>> _inputCallback;
+
+        private List<Tuple<Key, int, bool>> _inputs;
+
+        public long FrameCount = 0;
+        public PixelFormat PixelFormat = PixelFormat.Unknown;
+        public SystemInfo SystemInfo;
+        public SystemAVInfo SystemAVInfo;
+
+        public Wrapper(Action<Bitmap> frameCallback, Action<List<Tuple<Key, int, bool>>> inputCallback)
         {
+            _frameCallback = frameCallback;
+            _inputCallback = inputCallback;
+
             _libretroDLL = Win32API.LoadLibrary(DLL_NAME);
 
             _apiVersion = getDelegate<APIVersionPrototype>("retro_api_version");
@@ -49,14 +64,14 @@ namespace CSLibretro
             _setInputPoll = getDelegate<SetInputPollPrototype>("retro_set_input_poll");
             _setInputState = getDelegate<SetInputStatePrototype>("retro_set_input_state");
             _setVideoRefresh = getDelegate<SetVideoRefreshPrototype>("retro_set_video_refresh");
+
+            Debug.WriteLine(_apiVersion());
         }
 
         #region Run
 
         public void Run()
         {
-            //Debug.WriteLine(_apiVersion());
-
             _setEnvironment(environmentHandler);
             _setVideoRefresh(videoRefreshHandler);
             _setAudioSample(audioSampleHandler);
@@ -69,19 +84,45 @@ namespace CSLibretro
             GameInfo gameInfo = new GameInfo() { Path = ROM_NAME, Data = IntPtr.Zero, Size = UIntPtr.Zero, Meta = null };
             _loadGame(ref gameInfo);
 
-            //SystemInfo systemInfo = new SystemInfo();
-            //_getSystemInfo(out systemInfo);
-            //systemInfo.LibraryName = Marshal.PtrToStringAnsi(systemInfo.LibraryNamePointer);
-            //systemInfo.LibraryVersion = Marshal.PtrToStringAnsi(systemInfo.LibraryVersionPointer);
-            //systemInfo.ValidExtensions = Marshal.PtrToStringAnsi(systemInfo.ValidExtensionsPointer);
+            SystemInfo = new SystemInfo();
+            _getSystemInfo(out SystemInfo);
+            SystemInfo.LibraryName = Marshal.PtrToStringAnsi(SystemInfo.LibraryNamePointer);
+            SystemInfo.LibraryVersion = Marshal.PtrToStringAnsi(SystemInfo.LibraryVersionPointer);
+            SystemInfo.ValidExtensions = Marshal.PtrToStringAnsi(SystemInfo.ValidExtensionsPointer);
 
-            //SystemAVInfo systemAVInfo = new SystemAVInfo();
-            //_getSystemAVInfo(out systemAVInfo);
+            SystemAVInfo = new SystemAVInfo();
+            _getSystemAVInfo(out SystemAVInfo);
 
-            while (_frameCount <= 780)
+            double targetNanoseconds = 1 / SystemAVInfo.Timing.FPS * 1000000000;
+            double leftoverNanoseconds = 0;
+
+            while (FrameCount <= 78000)
             {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+
                 _run();
-                _frameCount++;
+
+                FrameCount++;
+                stopwatch.Stop();
+
+                double elapsedNanoseconds = ((double)stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000000000;
+                leftoverNanoseconds += targetNanoseconds - elapsedNanoseconds;
+                if (leftoverNanoseconds > 0)
+                {
+                    Thread.Sleep((int)(leftoverNanoseconds / 1000000));
+                    leftoverNanoseconds %= 1000000;
+                }
+                else
+                {
+                    leftoverNanoseconds = 0;
+                    Debug.WriteLine("HERE");
+                }
+
+                //double elapsedNanoseconds = ((double)stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000000000;
+                //double sleepNanoseconds = targetNanoseconds - elapsedNanoseconds;
+                //if (sleepNanoseconds > 0)
+                //    Thread.Sleep((int)(sleepNanoseconds / 1000000));
             }
         }
 
@@ -91,37 +132,64 @@ namespace CSLibretro
 
         private void audioSampleHandler(short left, short right)
         {
-            Debug.WriteLine("Audio Sample");
+            //Debug.WriteLine("Audio Sample");
         }
 
         private void audioSampleBatchHandler(IntPtr data, UIntPtr frames)
         {
-            Debug.WriteLine("Audio Sample Batch");
+            //Debug.WriteLine("Audio Sample Batch");
         }
 
         private bool environmentHandler(uint command, IntPtr data)
         {
-            Debug.WriteLine("Environment " + command);
+            //Debug.WriteLine("Environment: " + (EnvironmentCommand)command);
 
-            if (command == 27)
+            switch ((EnvironmentCommand)command)
             {
-                LogCallback logCallbackStruct = new LogCallback();
-                logCallbackStruct.Log = logCallback;
-                Marshal.StructureToPtr(logCallbackStruct, data, false);
-                return (true);
-            }
+                case EnvironmentCommand.GetCanDupe:
+                    Marshal.WriteByte(data, 0, 1);
+                    return (true);
 
-            return (false);
+                case EnvironmentCommand.SetPixelFormat:
+                    PixelFormat = (PixelFormat)Marshal.ReadInt32(data);
+                    return (true);
+
+                case EnvironmentCommand.GetLogInterface:
+                    LogCallback logCallbackStruct = new LogCallback();
+                    logCallbackStruct.Log = logCallback;
+                    Marshal.StructureToPtr(logCallbackStruct, data, false);
+                    return (true);
+
+                default:
+                    return (false);
+            }
         }
 
         private void inputPollHandler()
         {
-            Debug.WriteLine("Input Poll");
+            _inputs = new List<Tuple<Key, int, bool>>();
+            _inputs.Add(new Tuple<Key, int, bool>(Key.K, 0, false));
+            _inputs.Add(new Tuple<Key, int, bool>(Key.J, 1, false));
+            _inputs.Add(new Tuple<Key, int, bool>(Key.G, 2, false));
+            _inputs.Add(new Tuple<Key, int, bool>(Key.H, 3, false));
+            _inputs.Add(new Tuple<Key, int, bool>(Key.W, 4, false));
+            _inputs.Add(new Tuple<Key, int, bool>(Key.S, 5, false));
+            _inputs.Add(new Tuple<Key, int, bool>(Key.A, 6, false));
+            _inputs.Add(new Tuple<Key, int, bool>(Key.D, 7, false));
+            _inputs.Add(new Tuple<Key, int, bool>(Key.O, 8, false));
+            _inputs.Add(new Tuple<Key, int, bool>(Key.I, 9, false));
+            _inputs.Add(new Tuple<Key, int, bool>(Key.D9, 10, false));
+            _inputs.Add(new Tuple<Key, int, bool>(Key.D0, 11, false));
+            _inputCallback(_inputs);
         }
 
-        private void inputStateHandler(uint port, uint device, uint index, uint id)
+        private short inputStateHandler(uint port, uint device, uint index, uint id)
         {
-            //Debug.WriteLine("Input State");
+            if ((port == 0) && (device == 1))
+                if (_inputs.Where(i => (i.Item2 == id) && i.Item3).Any())
+                    return (1);
+
+            return (0);
         }
 
         private static void logCallback(int level, IntPtr fmt, params IntPtr[] arguments)
@@ -149,12 +217,12 @@ namespace CSLibretro
 
         private void videoRefreshHandler(IntPtr data, uint width, uint height, UIntPtr pitch)
         {
-            if (_frameCount % 60 == 0)
-            {
-                Bitmap bitmap = new Bitmap((int)width, (int)height, (int)pitch, PixelFormat.Format16bppArgb1555, data);
-                bitmap.Save("output" + _frameCount / 60 + ".bmp", ImageFormat.Bmp);
-                //_mainWindow.SetScreen(bitmap);
-            }
+            //if (FrameCount % 60 == 0)
+            //{
+                Bitmap bitmap = new Bitmap((int)width, (int)height, (int)pitch, System.Drawing.Imaging.PixelFormat.Format16bppRgb565, data);
+                //bitmap.Save("output" + FrameCount / 60 + ".png", ImageFormat.Png);
+                _frameCallback(bitmap);
+            //}
         }
 
         #endregion
