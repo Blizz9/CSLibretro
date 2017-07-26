@@ -16,29 +16,31 @@ namespace CSLibretro
     public delegate void InitPrototype();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
     public delegate bool LoadGamePrototype(ref GameInfo gameInfo);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void RunPrototype();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetAudioSamplePrototype([MarshalAs(UnmanagedType.FunctionPtr)]AudioSampleHandler audioSampleHandler);
+    public delegate uint SerializeSizePrototype();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetAudioSampleBatchPrototype([MarshalAs(UnmanagedType.FunctionPtr)]AudioSampleBatchHandler audioSampleBatchHandler);
+    public delegate void SetAudioSamplePrototype(AudioSampleHandler audioSampleHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetEnvironmentPrototype([MarshalAs(UnmanagedType.FunctionPtr)]EnvironmentHandler environmentHandler);
+    public delegate void SetAudioSampleBatchPrototype(AudioSampleBatchHandler audioSampleBatchHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetInputPollPrototype([MarshalAs(UnmanagedType.FunctionPtr)]InputPollHandler inputPollHandler);
+    public delegate void SetEnvironmentPrototype(EnvironmentHandler environmentHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetInputStatePrototype([MarshalAs(UnmanagedType.FunctionPtr)]InputStateHandler inputStateHandler);
+    public delegate void SetInputPollPrototype(InputPollHandler inputPollHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetVideoRefreshPrototype([MarshalAs(UnmanagedType.FunctionPtr)]VideoRefreshHandler videoRefreshHandler);
+    public delegate void SetInputStatePrototype(InputStateHandler inputStateHandler);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetVideoRefreshPrototype(VideoRefreshHandler videoRefreshHandler);
 
 
 
@@ -49,7 +51,6 @@ namespace CSLibretro
     public delegate void AudioSampleBatchHandler(IntPtr data, UIntPtr frames);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    [return: MarshalAs(UnmanagedType.U1)]
     public delegate bool EnvironmentHandler(uint command, IntPtr data);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

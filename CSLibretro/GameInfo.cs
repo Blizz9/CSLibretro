@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace CSLibretro
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     public struct GameInfo
     {
         public string Path;

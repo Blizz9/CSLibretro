@@ -3,15 +3,15 @@ using System.Runtime.InteropServices;
 
 namespace CSLibretro
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     public struct SystemInfo
     {
+        //[MarshalAs(UnmanagedType.LPStr)] public string LibraryName; // <-- I still think there is a way to make this work (, CharSet = CharSet.Ansi)
         public IntPtr LibraryNamePointer;
         public IntPtr LibraryVersionPointer;
         public IntPtr ValidExtensionsPointer;
-        //[MarshalAs(UnmanagedType.LPStr)] public string LibraryName; // <-- I still think there is a way to make this work
-        [MarshalAs(UnmanagedType.U1)] public bool NeedFullpath;
-        [MarshalAs(UnmanagedType.U1)] public bool BlockExtract;
+        public bool NeedFullpath;
+        public bool BlockExtract;
         public string LibraryName;
         public string LibraryVersion;
         public string ValidExtensions;

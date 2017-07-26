@@ -23,15 +23,23 @@ namespace CSLibretro
         private APIVersionPrototype _apiVersion;
         private GetSystemAVInfoPrototype _getSystemAVInfo;
         private GetSystemInfoPrototype _getSystemInfo;
-        private InitPrototype _init;
+        private Action _init;
         private LoadGamePrototype _loadGame;
         private RunPrototype _run;
+        private SerializeSizePrototype _serializeSize;
         private SetAudioSamplePrototype _setAudioSample;
         private SetAudioSampleBatchPrototype _setAudioSampleBatch;
         private SetEnvironmentPrototype _setEnvironment;
         private SetInputPollPrototype _setInputPoll;
         private SetInputStatePrototype _setInputState;
         private SetVideoRefreshPrototype _setVideoRefresh;
+
+        private AudioSampleHandler _audioSampleHandler;
+        private AudioSampleBatchHandler _audioSampleBatchHandler;
+        private EnvironmentHandler _environmentHandler;
+        private InputPollHandler _inputPollHandler;
+        private InputStateHandler _inputStateHandler;
+        private VideoRefreshHandler _videoRefreshHandler;
 
         private IntPtr _libretroDLL;
 
@@ -55,9 +63,10 @@ namespace CSLibretro
             _apiVersion = getDelegate<APIVersionPrototype>("retro_api_version");
             _getSystemAVInfo = getDelegate<GetSystemAVInfoPrototype>("retro_get_system_av_info");
             _getSystemInfo = getDelegate<GetSystemInfoPrototype>("retro_get_system_info");
-            _init = getDelegate<InitPrototype>("retro_init");
+            _init = getDelegate<Action>("retro_init");
             _loadGame = getDelegate<LoadGamePrototype>("retro_load_game");
             _run = getDelegate<RunPrototype>("retro_run");
+            _serializeSize = getDelegate<SerializeSizePrototype>("retro_serialize_size");
             _setAudioSample = getDelegate<SetAudioSamplePrototype>("retro_set_audio_sample");
             _setAudioSampleBatch = getDelegate<SetAudioSampleBatchPrototype>("retro_set_audio_sample_batch");
             _setEnvironment = getDelegate<SetEnvironmentPrototype>("retro_set_environment");
@@ -65,19 +74,21 @@ namespace CSLibretro
             _setInputState = getDelegate<SetInputStatePrototype>("retro_set_input_state");
             _setVideoRefresh = getDelegate<SetVideoRefreshPrototype>("retro_set_video_refresh");
 
+            _audioSampleHandler = new AudioSampleHandler(audioSampleCallback);
+            _audioSampleBatchHandler = new AudioSampleBatchHandler(audioSampleBatchCallback);
+            _environmentHandler = new EnvironmentHandler(environmentCallback);
+            _inputPollHandler = new InputPollHandler(inputPollCallback);
+            _inputStateHandler = new InputStateHandler(inputStateCallback);
+            _videoRefreshHandler = new VideoRefreshHandler(videoRefreshCallback);
+
             Debug.WriteLine(_apiVersion());
-        }
 
-        #region Run
-
-        public void Run()
-        {
-            _setEnvironment(environmentHandler);
-            _setVideoRefresh(videoRefreshHandler);
-            _setAudioSample(audioSampleHandler);
-            _setAudioSampleBatch(audioSampleBatchHandler);
-            _setInputPoll(inputPollHandler);
-            _setInputState(inputStateHandler);
+            _setEnvironment(_environmentHandler);
+            _setVideoRefresh(_videoRefreshHandler);
+            _setAudioSample(_audioSampleHandler);
+            _setAudioSampleBatch(_audioSampleBatchHandler);
+            _setInputPoll(_inputPollHandler);
+            _setInputState(_inputStateHandler);
 
             _init();
 
@@ -93,6 +104,13 @@ namespace CSLibretro
             SystemAVInfo = new SystemAVInfo();
             _getSystemAVInfo(out SystemAVInfo);
 
+            uint serializeSize = _serializeSize();
+        }
+
+        #region Run
+
+        public void Run()
+        {
             double targetNanoseconds = 1 / SystemAVInfo.Timing.FPS * 1000000000;
             double leftoverNanoseconds = 0;
 
@@ -116,8 +134,9 @@ namespace CSLibretro
                 else
                 {
                     leftoverNanoseconds = 0;
-                    Debug.WriteLine("HERE");
                 }
+
+                //Debug.WriteLine("Made it here: " + FrameCount);
 
                 //double elapsedNanoseconds = ((double)stopwatch.ElapsedTicks / (double)Stopwatch.Frequency) * 1000000000;
                 //double sleepNanoseconds = targetNanoseconds - elapsedNanoseconds;
@@ -130,17 +149,17 @@ namespace CSLibretro
 
         #region Handlers
 
-        private void audioSampleHandler(short left, short right)
+        private void audioSampleCallback(short left, short right)
         {
             //Debug.WriteLine("Audio Sample");
         }
 
-        private void audioSampleBatchHandler(IntPtr data, UIntPtr frames)
+        private void audioSampleBatchCallback(IntPtr data, UIntPtr frames)
         {
             //Debug.WriteLine("Audio Sample Batch");
         }
 
-        private bool environmentHandler(uint command, IntPtr data)
+        private bool environmentCallback(uint command, IntPtr data)
         {
             //Debug.WriteLine("Environment: " + (EnvironmentCommand)command);
 
@@ -165,7 +184,7 @@ namespace CSLibretro
             }
         }
 
-        private void inputPollHandler()
+        private void inputPollCallback()
         {
             _inputs = new List<Tuple<Key, int, bool>>();
             _inputs.Add(new Tuple<Key, int, bool>(Key.K, 0, false));
@@ -183,7 +202,7 @@ namespace CSLibretro
             _inputCallback(_inputs);
         }
 
-        private short inputStateHandler(uint port, uint device, uint index, uint id)
+        private short inputStateCallback(uint port, uint device, uint index, uint id)
         {
             if ((port == 0) && (device == 1))
                 if (_inputs.Where(i => (i.Item2 == id) && i.Item3).Any())
@@ -215,7 +234,7 @@ namespace CSLibretro
             Debug.WriteLine(logMessage.ToString());
         }
 
-        private void videoRefreshHandler(IntPtr data, uint width, uint height, UIntPtr pitch)
+        private void videoRefreshCallback(IntPtr data, uint width, uint height, UIntPtr pitch)
         {
             //if (FrameCount % 60 == 0)
             //{

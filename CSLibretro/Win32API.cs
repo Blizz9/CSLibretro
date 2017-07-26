@@ -12,7 +12,7 @@ namespace CSLibretro
         [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         public static extern IntPtr GetProcAddress(IntPtr dll, string methodName);
 
-        [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int _snprintf([MarshalAs(UnmanagedType.LPStr)] StringBuilder buffer, IntPtr count, IntPtr format, params IntPtr[] arguments);
+        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int _snprintf(StringBuilder buffer, IntPtr count, IntPtr format, params IntPtr[] arguments);
     }
 }

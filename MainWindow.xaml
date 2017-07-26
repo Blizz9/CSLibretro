@@ -6,5 +6,5 @@
         xmlns:local="clr-namespace:CSLibretro"
         mc:Ignorable="d"
         Title="MainWindow" Height="711" Width="784">
-    <Image x:Name="_screen" Height="672" Width="768" />
+    <Image x:Name="_screen" Height="672" Width="768" RenderOptions.BitmapScalingMode="NearestNeighbor" />
 </Window>
