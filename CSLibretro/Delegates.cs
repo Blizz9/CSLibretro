@@ -7,6 +7,12 @@ namespace CSLibretro
     public delegate uint APIVersionPrototype();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate IntPtr GetMemoryDataPrototype(uint id);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate uint GetMemorySizePrototype(uint id);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void GetSystemAVInfoPrototype(out SystemAVInfo systemAVInfo);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -20,6 +26,9 @@ namespace CSLibretro
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void RunPrototype();
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate bool SerializePrototype(IntPtr data, uint size);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate uint SerializeSizePrototype();
@@ -41,6 +50,9 @@ namespace CSLibretro
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void SetVideoRefreshPrototype(VideoRefreshHandler videoRefreshHandler);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate bool UnserializePrototype(IntPtr data, uint size);
 
 
 
