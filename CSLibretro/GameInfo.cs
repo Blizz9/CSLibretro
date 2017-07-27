@@ -8,7 +8,7 @@ namespace CSLibretro
     {
         public string Path;
         public IntPtr Data;
-        public UIntPtr Size;
+        public uint Size;
         public string Meta;
     }
 }

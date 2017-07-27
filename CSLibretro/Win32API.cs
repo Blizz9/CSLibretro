@@ -13,6 +13,6 @@ namespace CSLibretro
         public static extern IntPtr GetProcAddress(IntPtr dll, string methodName);
 
         [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int _snprintf(StringBuilder buffer, IntPtr count, IntPtr format, params IntPtr[] arguments);
+        public static extern int _snprintf(StringBuilder buffer, uint count, string format, params IntPtr[] arguments);
     }
 }

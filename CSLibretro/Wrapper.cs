@@ -102,7 +102,7 @@ namespace CSLibretro
 
             _init();
 
-            GameInfo gameInfo = new GameInfo() { Path = ROM_NAME, Data = IntPtr.Zero, Size = UIntPtr.Zero, Meta = null };
+            GameInfo gameInfo = new GameInfo() { Path = ROM_NAME, Data = IntPtr.Zero, Size = 0, Meta = null };
             _loadGame(ref gameInfo);
 
             SystemInfo = new SystemInfo();
@@ -268,9 +268,10 @@ namespace CSLibretro
             //Debug.WriteLine("Audio Sample");
         }
 
-        private void audioSampleBatchCallback(IntPtr data, UIntPtr frames)
+        private uint audioSampleBatchCallback(IntPtr data, uint frames)
         {
             //Debug.WriteLine("Audio Sample Batch");
+            return (0);
         }
 
         private bool environmentCallback(uint command, IntPtr data)
@@ -325,7 +326,7 @@ namespace CSLibretro
             return (0);
         }
 
-        private static void logCallback(int level, IntPtr fmt, params IntPtr[] arguments)
+        private static void logCallback(int level, string fmt, params IntPtr[] arguments)
         {
             Debug.WriteLine("Log");
 
@@ -333,7 +334,7 @@ namespace CSLibretro
 
             while (true)
             {
-                int length = Win32API._snprintf(logMessage, new IntPtr(logMessage.Capacity), fmt, arguments);
+                int length = Win32API._snprintf(logMessage, (uint)logMessage.Capacity, fmt, arguments);
 
                 if ((length <= 0) || (length >= logMessage.Capacity))
                 {
@@ -348,7 +349,7 @@ namespace CSLibretro
             Debug.WriteLine(logMessage.ToString());
         }
 
-        private void videoRefreshCallback(IntPtr data, uint width, uint height, UIntPtr pitch)
+        private void videoRefreshCallback(IntPtr data, uint width, uint height, uint pitch)
         {
             int rowSize = (int)width * sizeof(short); // this will be different depending on pixel format
 

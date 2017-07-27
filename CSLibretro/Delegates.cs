@@ -60,7 +60,7 @@ namespace CSLibretro
     public delegate void AudioSampleHandler(short left, short right);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void AudioSampleBatchHandler(IntPtr data, UIntPtr frames);
+    public delegate uint AudioSampleBatchHandler(IntPtr data, uint frames);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate bool EnvironmentHandler(uint command, IntPtr data);
@@ -72,8 +72,8 @@ namespace CSLibretro
     public delegate short InputStateHandler(uint port, uint device, uint index, uint id);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void LogHandler(int level, IntPtr fmt, params IntPtr[] arguments);
+    public delegate void LogHandler(int level, string fmt, params IntPtr[] arguments);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void VideoRefreshHandler(IntPtr data, uint width, uint height, UIntPtr pitch);
+    public delegate void VideoRefreshHandler(IntPtr data, uint width, uint height, uint pitch);
 }
