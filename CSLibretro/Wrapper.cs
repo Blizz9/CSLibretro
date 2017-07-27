@@ -13,7 +13,6 @@ namespace CSLibretro
     // TODO : double check all delegate prototypes against libretro.h and make sure they simple good and as simple as possible (not trusting libretro.cs)
     // TODO : rename 'Prototype' to 'Signature'?
     // TODO : figure out if I can find the PC, ROM, and whether I can write to it or not
-    // TODO : move this over to Unity
     public class Wrapper
     {
         private const string DLL_NAME = "snes9x_libretro.dll";
@@ -109,9 +108,9 @@ namespace CSLibretro
 
             SystemInfo = new SystemInfo();
             _getSystemInfo(out SystemInfo);
-            SystemInfo.LibraryName = Marshal.PtrToStringAnsi(SystemInfo.LibraryNamePointer);
-            SystemInfo.LibraryVersion = Marshal.PtrToStringAnsi(SystemInfo.LibraryVersionPointer);
-            SystemInfo.ValidExtensions = Marshal.PtrToStringAnsi(SystemInfo.ValidExtensionsPointer);
+            SystemInfo.LibraryName = Marshal.PtrToStringAnsi(SystemInfo.LibraryNameAddress);
+            SystemInfo.LibraryVersion = Marshal.PtrToStringAnsi(SystemInfo.LibraryVersionAddress);
+            SystemInfo.ValidExtensions = Marshal.PtrToStringAnsi(SystemInfo.ValidExtensionsAddress);
 
             SystemAVInfo = new SystemAVInfo();
             _getSystemAVInfo(out SystemAVInfo);
@@ -352,12 +351,27 @@ namespace CSLibretro
 
         private void videoRefreshCallback(IntPtr data, uint width, uint height, UIntPtr pitch)
         {
-            //if (FrameCount % 60 == 0)
-            //{
-                Bitmap bitmap = new Bitmap((int)width, (int)height, (int)pitch, System.Drawing.Imaging.PixelFormat.Format16bppRgb565, data);
-                //bitmap.Save("output" + FrameCount / 60 + ".png", ImageFormat.Png);
-                _frameCallback(bitmap);
-            //}
+            int rowSize = (int)width * sizeof(short); // this will be different depending on pixel format
+
+            int size = (int)height * rowSize;
+            byte[] bytes = new byte[size];
+
+            for (int i = 0; i < height; i++)
+            {
+                IntPtr rowAddress = data + (i * (int)pitch);
+                int newRowIndex = i * rowSize;
+                Marshal.Copy(rowAddress, bytes, newRowIndex, rowSize);
+            }
+
+            GCHandle pinnedBytes = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            IntPtr pinnedBytesAddress = pinnedBytes.AddrOfPinnedObject();
+
+            //Bitmap bitmap = new Bitmap((int)width, (int)height, (int)pitch, System.Drawing.Imaging.PixelFormat.Format16bppRgb565, data);
+            Bitmap bitmap = new Bitmap((int)width, (int)height, (int)rowSize, System.Drawing.Imaging.PixelFormat.Format16bppRgb565, pinnedBytesAddress);
+
+            pinnedBytes.Free();
+
+            _frameCallback(bitmap);
         }
 
         #endregion

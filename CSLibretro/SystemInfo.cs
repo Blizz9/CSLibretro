@@ -7,9 +7,9 @@ namespace CSLibretro
     public struct SystemInfo
     {
         //[MarshalAs(UnmanagedType.LPStr)] public string LibraryName; // <-- I still think there is a way to make this work (, CharSet = CharSet.Ansi)
-        public IntPtr LibraryNamePointer;
-        public IntPtr LibraryVersionPointer;
-        public IntPtr ValidExtensionsPointer;
+        public IntPtr LibraryNameAddress;
+        public IntPtr LibraryVersionAddress;
+        public IntPtr ValidExtensionsAddress;
         public bool NeedFullpath;
         public bool BlockExtract;
         public string LibraryName;
