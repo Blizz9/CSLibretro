@@ -10,7 +10,6 @@ using System.Windows.Input;
 
 namespace CSLibretro
 {
-    // TODO : double check all delegate prototypes against libretro.h and make sure they simple good and as simple as possible (not trusting libretro.cs)
     // TODO : figure out if I can find the PC, ROM, and whether I can write to it or not
     public class Wrapper
     {
