@@ -4,55 +4,55 @@ using System.Runtime.InteropServices;
 namespace CSLibretro
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate uint APIVersionPrototype();
+    public delegate uint APIVersionSignature();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate IntPtr GetMemoryDataPrototype(uint id);
+    public delegate IntPtr GetMemoryDataSignature(uint id);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate uint GetMemorySizePrototype(uint id);
+    public delegate uint GetMemorySizeSignature(uint id);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void GetSystemAVInfoPrototype(out SystemAVInfo systemAVInfo);
+    public delegate void GetSystemAVInfoSignature(out SystemAVInfo systemAVInfo);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void GetSystemInfoPrototype(out SystemInfo systemInfo);
+    public delegate void GetSystemInfoSignature(out SystemInfo systemInfo);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void InitPrototype();
+    public delegate void InitSignature();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate bool LoadGamePrototype(ref GameInfo gameInfo);
+    public delegate bool LoadGameSignature(ref GameInfo gameInfo);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void RunPrototype();
+    public delegate void RunSignature();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate bool SerializePrototype(IntPtr data, uint size);
+    public delegate bool SerializeSignature(IntPtr data, uint size);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate uint SerializeSizePrototype();
+    public delegate uint SerializeSizeSignature();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetAudioSamplePrototype(AudioSampleHandler audioSampleHandler);
+    public delegate void SetAudioSampleSignature(AudioSampleHandler audioSampleHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetAudioSampleBatchPrototype(AudioSampleBatchHandler audioSampleBatchHandler);
+    public delegate void SetAudioSampleBatchSignature(AudioSampleBatchHandler audioSampleBatchHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetEnvironmentPrototype(EnvironmentHandler environmentHandler);
+    public delegate void SetEnvironmentSignature(EnvironmentHandler environmentHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetInputPollPrototype(InputPollHandler inputPollHandler);
+    public delegate void SetInputPollSignature(InputPollHandler inputPollHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetInputStatePrototype(InputStateHandler inputStateHandler);
+    public delegate void SetInputStateSignature(InputStateHandler inputStateHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SetVideoRefreshPrototype(VideoRefreshHandler videoRefreshHandler);
+    public delegate void SetVideoRefreshSignature(VideoRefreshHandler videoRefreshHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate bool UnserializePrototype(IntPtr data, uint size);
+    public delegate bool UnserializeSignature(IntPtr data, uint size);
 
 
 

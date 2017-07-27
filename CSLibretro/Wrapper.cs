@@ -11,7 +11,6 @@ using System.Windows.Input;
 namespace CSLibretro
 {
     // TODO : double check all delegate prototypes against libretro.h and make sure they simple good and as simple as possible (not trusting libretro.cs)
-    // TODO : rename 'Prototype' to 'Signature'?
     // TODO : figure out if I can find the PC, ROM, and whether I can write to it or not
     public class Wrapper
     {
@@ -23,23 +22,23 @@ namespace CSLibretro
         //private const string ROM_NAME = "smb.nes";
         //private const string ROM_NAME = "sml.gb";
         
-        private APIVersionPrototype _apiVersion;
-        private GetMemoryDataPrototype _getMemoryData;
-        private GetMemorySizePrototype _getMemorySize;
-        private GetSystemAVInfoPrototype _getSystemAVInfo;
-        private GetSystemInfoPrototype _getSystemInfo;
-        private Action _init;
-        private LoadGamePrototype _loadGame;
-        private RunPrototype _run;
-        private SerializePrototype _serialize;
-        private SerializeSizePrototype _serializeSize;
-        private SetAudioSamplePrototype _setAudioSample;
-        private SetAudioSampleBatchPrototype _setAudioSampleBatch;
-        private SetEnvironmentPrototype _setEnvironment;
-        private SetInputPollPrototype _setInputPoll;
-        private SetInputStatePrototype _setInputState;
-        private SetVideoRefreshPrototype _setVideoRefresh;
-        private UnserializePrototype _unserialize;
+        private APIVersionSignature _apiVersion;
+        private GetMemoryDataSignature _getMemoryData;
+        private GetMemorySizeSignature _getMemorySize;
+        private GetSystemAVInfoSignature _getSystemAVInfo;
+        private GetSystemInfoSignature _getSystemInfo;
+        private InitSignature _init;
+        private LoadGameSignature _loadGame;
+        private RunSignature _run;
+        private SerializeSignature _serialize;
+        private SerializeSizeSignature _serializeSize;
+        private SetAudioSampleSignature _setAudioSample;
+        private SetAudioSampleBatchSignature _setAudioSampleBatch;
+        private SetEnvironmentSignature _setEnvironment;
+        private SetInputPollSignature _setInputPoll;
+        private SetInputStateSignature _setInputState;
+        private SetVideoRefreshSignature _setVideoRefresh;
+        private UnserializeSignature _unserialize;
 
         private AudioSampleHandler _audioSampleHandler;
         private AudioSampleBatchHandler _audioSampleBatchHandler;
@@ -67,23 +66,23 @@ namespace CSLibretro
 
             _libretroDLL = Win32API.LoadLibrary(DLL_NAME);
 
-            _apiVersion = getDelegate<APIVersionPrototype>("retro_api_version");
-            _getMemoryData = getDelegate<GetMemoryDataPrototype>("retro_get_memory_data");
-            _getMemorySize = getDelegate<GetMemorySizePrototype>("retro_get_memory_size");
-            _getSystemAVInfo = getDelegate<GetSystemAVInfoPrototype>("retro_get_system_av_info");
-            _getSystemInfo = getDelegate<GetSystemInfoPrototype>("retro_get_system_info");
-            _init = getDelegate<Action>("retro_init");
-            _loadGame = getDelegate<LoadGamePrototype>("retro_load_game");
-            _run = getDelegate<RunPrototype>("retro_run");
-            _serialize = getDelegate<SerializePrototype>("retro_serialize");
-            _serializeSize = getDelegate<SerializeSizePrototype>("retro_serialize_size");
-            _setAudioSample = getDelegate<SetAudioSamplePrototype>("retro_set_audio_sample");
-            _setAudioSampleBatch = getDelegate<SetAudioSampleBatchPrototype>("retro_set_audio_sample_batch");
-            _setEnvironment = getDelegate<SetEnvironmentPrototype>("retro_set_environment");
-            _setInputPoll = getDelegate<SetInputPollPrototype>("retro_set_input_poll");
-            _setInputState = getDelegate<SetInputStatePrototype>("retro_set_input_state");
-            _setVideoRefresh = getDelegate<SetVideoRefreshPrototype>("retro_set_video_refresh");
-            _unserialize = getDelegate<UnserializePrototype>("retro_unserialize");
+            _apiVersion = getDelegate<APIVersionSignature>("retro_api_version");
+            _getMemoryData = getDelegate<GetMemoryDataSignature>("retro_get_memory_data");
+            _getMemorySize = getDelegate<GetMemorySizeSignature>("retro_get_memory_size");
+            _getSystemAVInfo = getDelegate<GetSystemAVInfoSignature>("retro_get_system_av_info");
+            _getSystemInfo = getDelegate<GetSystemInfoSignature>("retro_get_system_info");
+            _init = getDelegate<InitSignature>("retro_init");
+            _loadGame = getDelegate<LoadGameSignature>("retro_load_game");
+            _run = getDelegate<RunSignature>("retro_run");
+            _serialize = getDelegate<SerializeSignature>("retro_serialize");
+            _serializeSize = getDelegate<SerializeSizeSignature>("retro_serialize_size");
+            _setAudioSample = getDelegate<SetAudioSampleSignature>("retro_set_audio_sample");
+            _setAudioSampleBatch = getDelegate<SetAudioSampleBatchSignature>("retro_set_audio_sample_batch");
+            _setEnvironment = getDelegate<SetEnvironmentSignature>("retro_set_environment");
+            _setInputPoll = getDelegate<SetInputPollSignature>("retro_set_input_poll");
+            _setInputState = getDelegate<SetInputStateSignature>("retro_set_input_state");
+            _setVideoRefresh = getDelegate<SetVideoRefreshSignature>("retro_set_video_refresh");
+            _unserialize = getDelegate<UnserializeSignature>("retro_unserialize");
 
             _audioSampleHandler = new AudioSampleHandler(audioSampleCallback);
             _audioSampleBatchHandler = new AudioSampleBatchHandler(audioSampleBatchCallback);
