@@ -1,7 +1,6 @@
 ﻿using com.PixelismGames.CSLibretro.Libretro;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -9,6 +8,7 @@ using System.Threading;
 namespace com.PixelismGames.CSLibretro
 {
     // TODO : figure out if I can find the PC, ROM, and whether I can write to it or not
+    // TOOD : try this new and improved core in Unity
     public class Core
     {
         private APIVersionSignature _apiVersion;
@@ -42,15 +42,25 @@ namespace com.PixelismGames.CSLibretro
         private Stopwatch _timer;
         private long _framePeriodNanoseconds;
 
+        private IntPtr _ramAddress;
+        private int _ramSize;
+
+        private SystemInfo _systemInfo;
+        private SystemAVInfo _systemAVInfo;
+
         public bool IsRunning;
         public long FrameCount = 0;
         public PixelFormat PixelFormat = PixelFormat.Unknown;
-        public SystemInfo _systemInfo;
-        public SystemAVInfo _systemAVInfo;
 
+        public event Action<short, short> AudioSampleHandler;
+        public event Action AudioSampleBatchHandler;
+        public event Action InputPollHandler;
+        public event Action InputStateHandler;
         public event Action<LogLevel, string> LogHandler;
         public event Action<byte[]> VideoFrameHandler;
 
+        public AudioSampleBatchHandler AudioSampleBatchPassthroughHandler;
+        public InputStateHandler InputStatePassthroughHandler;
         public LogHandler LogPassthroughHandler;
         public VideoRefreshHandler VideoFramePassthroughHandler;
 
@@ -74,6 +84,21 @@ namespace com.PixelismGames.CSLibretro
         public double FrameRate
         {
             get { return (_systemAVInfo.Timing.FPS); }
+        }
+
+        public string Name
+        {
+            get { return (_systemInfo.LibraryName); }
+        }
+
+        public string ValidExtensions
+        {
+            get { return (_systemInfo.ValidExtensions); }
+        }
+
+        public string Version
+        {
+            get { return (_systemInfo.LibraryVersion); }
         }
 
         #endregion
@@ -102,18 +127,28 @@ namespace com.PixelismGames.CSLibretro
             _unserialize = GetDelegate<UnserializeSignature>("retro_unserialize");
         }
 
-        public void Initialize(string romPath)
+        #region Load
+
+        public void Load(string romPath)
         {
-            _audioSampleHandler = new AudioSampleHandler(audioSampleCallback);
-            _audioSampleBatchHandler = new AudioSampleBatchHandler(audioSampleBatchCallback);
-            _environmentHandler = new EnvironmentHandler(environmentCallback);
-            _inputPollHandler = new InputPollHandler(inputPollCallback);
-            _inputStateHandler = new InputStateHandler(inputStateCallback);
+            if (AudioSampleBatchPassthroughHandler == null)
+                _audioSampleBatchHandler = new AudioSampleBatchHandler(audioSampleBatchCallback);
+            else
+                _audioSampleBatchHandler = AudioSampleBatchPassthroughHandler;
+
+            if (InputStatePassthroughHandler == null)
+                _inputStateHandler = new InputStateHandler(inputStateCallback);
+            else
+                _inputStateHandler = InputStatePassthroughHandler;
 
             if (VideoFramePassthroughHandler == null)
                 _videoRefreshHandler = new VideoRefreshHandler(videoRefreshCallback);
             else
                 _videoRefreshHandler = VideoFramePassthroughHandler;
+
+            _audioSampleHandler = new AudioSampleHandler(audioSampleCallback);
+            _environmentHandler = new EnvironmentHandler(environmentCallback); // options for passing through some commands need to be done here
+            _inputPollHandler = new InputPollHandler(inputPollCallback);
 
             _setEnvironment(_environmentHandler);
             _setVideoRefresh(_videoRefreshHandler);
@@ -137,7 +172,12 @@ namespace com.PixelismGames.CSLibretro
             _getSystemAVInfo(out _systemAVInfo);
 
             _framePeriodNanoseconds = (long)(1000000000 / _systemAVInfo.Timing.FPS);
+
+            _ramAddress = _getMemoryData(MemoryType.RAM);
+            _ramSize = (int)_getMemorySize(MemoryType.RAM);
         }
+
+        #endregion
 
         #region Run
 
@@ -182,15 +222,48 @@ namespace com.PixelismGames.CSLibretro
 
         #endregion
 
+        #region Memory
+
+        public byte[] ReadRAM(int offset = 0, int? length = null)
+        {
+            if (!length.HasValue)
+                length = _ramSize - offset;
+
+            byte[] ram = new byte[length.Value];
+
+            IntPtr ramAddressOffset = (IntPtr)((long)_ramAddress + offset);
+            Marshal.Copy(ramAddressOffset, ram, 0, length.Value);
+
+            return (ram);
+        }
+
+        public void WriteRAM(byte[] data, int offset = 0)
+        {
+            IntPtr ramAddressOffset = (IntPtr)((long)_ramAddress + offset);
+            Marshal.Copy(data, 0, ramAddressOffset, data.Length);
+        }
+
+        #endregion
+
         #region Handlers
 
         private void audioSampleCallback(short left, short right)
         {
+            AudioSampleHandler?.Invoke(left, right);
         }
 
         private uint audioSampleBatchCallback(IntPtr data, uint frames)
         {
-            return (0);
+            uint returnValue = 0;
+
+            if (AudioSampleBatchHandler != null)
+            {
+                returnValue = 0; // do stuff here presumably
+
+                AudioSampleBatchHandler();
+            }
+
+            return (returnValue);
         }
 
         // build a way for the user of core to passthrough their choice of commands to handle
@@ -222,11 +295,21 @@ namespace com.PixelismGames.CSLibretro
 
         private void inputPollCallback()
         {
+            InputPollHandler?.Invoke();
         }
 
         private short inputStateCallback(uint port, uint device, uint index, uint id)
         {
-            return (0);
+            short returnValue = 0;
+
+            if (InputStateHandler != null)
+            {
+                returnValue = 0; // do stuff here presumably
+
+                InputStateHandler();
+            }
+
+            return (returnValue);
         }
 
         private void logCallback(LogLevel level, string fmt, params IntPtr[] arguments)

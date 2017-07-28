@@ -19,7 +19,9 @@ namespace CSLibretro
             _core = new Core("snes9x_libretro.dll");
             //_core.VideoFramePassthroughHandler = videoFrameHandlerRaw;
             _core.VideoFrameHandler += videoFrameHandler;
-            _core.Initialize("smw.sfc");
+            _core.Load("smw.sfc");
+
+            byte[] temp = _core.ReadRAM(130000);
 
             Task task = Task.Run(new Action(() => { _core.Run(); }));
         }
