@@ -8,7 +8,6 @@ using System.Threading;
 namespace com.PixelismGames.CSLibretro
 {
     // TODO : figure out if I can find the PC, ROM, and whether I can write to it or not
-    // TODO : make and test 32 and 64 bit builds
     public class Wrapper
     {
         private const string DLL_NAME = "snes9x_libretro.dll";
@@ -278,9 +277,9 @@ namespace com.PixelismGames.CSLibretro
 
             switch ((EnvironmentCommand)command)
             {
-                //case EnvironmentCommand.GetCanDupe:
-                //    Marshal.WriteByte(data, 0, 1);
-                //    return (true);
+                case EnvironmentCommand.GetCanDupe:
+                    Marshal.WriteByte(data, 0, 1);
+                    return (true);
 
                 case EnvironmentCommand.SetPixelFormat:
                     PixelFormat = (PixelFormat)Marshal.ReadInt32(data);
@@ -356,7 +355,7 @@ namespace com.PixelismGames.CSLibretro
 
             for (int i = 0; i < height; i++)
             {
-                IntPtr rowAddress = (IntPtr)((int)data + (i * (int)pitch));
+                IntPtr rowAddress = (IntPtr)((long)data + (i * (int)pitch));
                 int newRowIndex = i * rowSize;
                 Marshal.Copy(rowAddress, bytes, newRowIndex, rowSize);
             }
