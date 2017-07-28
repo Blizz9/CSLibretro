@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace com.PixelismGames.CSLibretro.Libretro
+namespace com.PixelismGames.CSLibretro
 {
     public class Win32API
     {

@@ -35,16 +35,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Libretro\Delegates.cs" />
-    <Compile Include="Libretro\EnvironmentCommand.cs" />
-    <Compile Include="Libretro\GameGeometry.cs" />
-    <Compile Include="Libretro\GameInfo.cs" />
-    <Compile Include="Libretro\LogCallback.cs" />
-    <Compile Include="Libretro\PixelFormat.cs" />
+    <Compile Include="Libretro\Enums\EnvironmentCommand.cs" />
+    <Compile Include="Libretro\Enums\LogLevel.cs" />
+    <Compile Include="Libretro\Structs\GameGeometry.cs" />
+    <Compile Include="Libretro\Structs\GameInfo.cs" />
+    <Compile Include="Libretro\Structs\LogCallback.cs" />
+    <Compile Include="Libretro\Enums\PixelFormat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Libretro\SystemAVInfo.cs" />
-    <Compile Include="Libretro\SystemInfo.cs" />
-    <Compile Include="Libretro\SystemTiming.cs" />
-    <Compile Include="Libretro\Win32API.cs" />
+    <Compile Include="Libretro\Structs\SystemAVInfo.cs" />
+    <Compile Include="Libretro\Structs\SystemInfo.cs" />
+    <Compile Include="Libretro\Structs\SystemTiming.cs" />
+    <Compile Include="Win32API.cs" />
     <Compile Include="Wrapper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
