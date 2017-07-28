@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace CSLibretro
+namespace com.PixelismGames.CSLibretro.Libretro
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate uint APIVersionSignature();

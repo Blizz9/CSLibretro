@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace CSLibretro.Properties
+namespace CSLibretroTest.Properties
 {
 
 

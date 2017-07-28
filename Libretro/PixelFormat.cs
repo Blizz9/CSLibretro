@@ -1,4 +1,4 @@
-﻿namespace CSLibretro
+﻿namespace com.PixelismGames.CSLibretro.Libretro
 {
     public enum PixelFormat
     {

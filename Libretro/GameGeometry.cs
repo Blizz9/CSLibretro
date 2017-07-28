@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace CSLibretro
+namespace com.PixelismGames.CSLibretro.Libretro
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct GameGeometry

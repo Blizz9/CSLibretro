@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using com.PixelismGames.CSLibretro.Libretro;
+using System;
 using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Windows.Input;
 
-namespace CSLibretro
+namespace com.PixelismGames.CSLibretro
 {
     // TODO : figure out if I can find the PC, ROM, and whether I can write to it or not
+    // TODO : enum for log level
     public class Wrapper
     {
         private const string DLL_NAME = "snes9x_libretro.dll";
@@ -48,20 +46,21 @@ namespace CSLibretro
 
         private IntPtr _libretroDLL;
 
-        private Action<Bitmap> _frameCallback;
-        private Action<List<Tuple<Key, int, bool>>> _inputCallback;
+        //private Action<Bitmap> _frameCallback;
+        //private Action<List<Tuple<Key, int, bool>>> _inputCallback;
 
-        private List<Tuple<Key, int, bool>> _inputs;
+        //private List<Tuple<Key, int, bool>> _inputs;
 
         public long FrameCount = 0;
         public PixelFormat PixelFormat = PixelFormat.Unknown;
         public SystemInfo SystemInfo;
         public SystemAVInfo SystemAVInfo;
 
-        public Wrapper(Action<Bitmap> frameCallback, Action<List<Tuple<Key, int, bool>>> inputCallback)
+        //public Wrapper(Action<Bitmap> frameCallback, Action<List<Tuple<Key, int, bool>>> inputCallback)
+        public Wrapper()
         {
-            _frameCallback = frameCallback;
-            _inputCallback = inputCallback;
+            //_frameCallback = frameCallback;
+            //_inputCallback = inputCallback;
 
             _libretroDLL = Win32API.LoadLibrary(DLL_NAME);
 
@@ -300,27 +299,27 @@ namespace CSLibretro
 
         private void inputPollCallback()
         {
-            _inputs = new List<Tuple<Key, int, bool>>();
-            _inputs.Add(new Tuple<Key, int, bool>(Key.K, 0, false));
-            _inputs.Add(new Tuple<Key, int, bool>(Key.J, 1, false));
-            _inputs.Add(new Tuple<Key, int, bool>(Key.G, 2, false));
-            _inputs.Add(new Tuple<Key, int, bool>(Key.H, 3, false));
-            _inputs.Add(new Tuple<Key, int, bool>(Key.W, 4, false));
-            _inputs.Add(new Tuple<Key, int, bool>(Key.S, 5, false));
-            _inputs.Add(new Tuple<Key, int, bool>(Key.A, 6, false));
-            _inputs.Add(new Tuple<Key, int, bool>(Key.D, 7, false));
-            _inputs.Add(new Tuple<Key, int, bool>(Key.O, 8, false));
-            _inputs.Add(new Tuple<Key, int, bool>(Key.I, 9, false));
-            _inputs.Add(new Tuple<Key, int, bool>(Key.D9, 10, false));
-            _inputs.Add(new Tuple<Key, int, bool>(Key.D0, 11, false));
-            _inputCallback(_inputs);
+            //_inputs = new List<Tuple<Key, int, bool>>();
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.K, 0, false));
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.J, 1, false));
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.G, 2, false));
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.H, 3, false));
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.W, 4, false));
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.S, 5, false));
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.A, 6, false));
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.D, 7, false));
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.O, 8, false));
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.I, 9, false));
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.D9, 10, false));
+            //_inputs.Add(new Tuple<Key, int, bool>(Key.D0, 11, false));
+            //_inputCallback(_inputs);
         }
 
         private short inputStateCallback(uint port, uint device, uint index, uint id)
         {
-            if ((port == 0) && (device == 1))
-                if (_inputs.Where(i => (i.Item2 == id) && i.Item3).Any())
-                    return (1);
+            //if ((port == 0) && (device == 1))
+            //    if (_inputs.Where(i => (i.Item2 == id) && i.Item3).Any())
+            //        return (1);
 
             return (0);
         }
@@ -357,7 +356,7 @@ namespace CSLibretro
 
             for (int i = 0; i < height; i++)
             {
-                IntPtr rowAddress = data + (i * (int)pitch);
+                IntPtr rowAddress = (IntPtr)((int)data + (i * (int)pitch));
                 int newRowIndex = i * rowSize;
                 Marshal.Copy(rowAddress, bytes, newRowIndex, rowSize);
             }
@@ -366,11 +365,11 @@ namespace CSLibretro
             IntPtr pinnedBytesAddress = pinnedBytes.AddrOfPinnedObject();
 
             //Bitmap bitmap = new Bitmap((int)width, (int)height, (int)pitch, System.Drawing.Imaging.PixelFormat.Format16bppRgb565, data);
-            Bitmap bitmap = new Bitmap((int)width, (int)height, (int)rowSize, System.Drawing.Imaging.PixelFormat.Format16bppRgb565, pinnedBytesAddress);
+            //Bitmap bitmap = new Bitmap((int)width, (int)height, (int)rowSize, System.Drawing.Imaging.PixelFormat.Format16bppRgb565, pinnedBytesAddress);
 
             pinnedBytes.Free();
 
-            _frameCallback(bitmap);
+            //_frameCallback(bitmap);
         }
 
         #endregion

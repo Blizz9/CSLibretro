@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace CSLibretro
+namespace com.PixelismGames.CSLibretro.Libretro
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct SystemInfo
     {
-        //[MarshalAs(UnmanagedType.LPStr)] public string LibraryName; // <-- I still think there is a way to make this work (, CharSet = CharSet.Ansi)
+        //[MarshalAs(UnmanagedType.LPStr)] public string LibraryName; <-- I still think there is a way to make this work (, CharSet = CharSet.Ansi)
         public IntPtr LibraryNameAddress;
         public IntPtr LibraryVersionAddress;
         public IntPtr ValidExtensionsAddress;

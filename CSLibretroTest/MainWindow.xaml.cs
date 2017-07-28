@@ -1,12 +1,9 @@
-﻿using System;
+﻿using com.PixelismGames.CSLibretro;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 
 namespace CSLibretro
 {
@@ -18,29 +15,30 @@ namespace CSLibretro
         {
             InitializeComponent();
 
-            _csLibretroWrapper = new Wrapper(SetScreen, GetInputs);
+            //_csLibretroWrapper = new Wrapper(SetScreen, GetInputs);
+            _csLibretroWrapper = new Wrapper();
             Task task = Task.Run(new Action(() => { _csLibretroWrapper.Run(); }));
         }
 
-        public void SetScreen(Bitmap bitmap)
-        {
-            Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                using (MemoryStream memoryStream = new MemoryStream())
-                {
-                    bitmap.Save(memoryStream, ImageFormat.Png);
-                    memoryStream.Position = 0;
+        //public void SetScreen(Bitmap bitmap)
+        //{
+        //    Application.Current.Dispatcher.Invoke(new Action(() =>
+        //    {
+        //        using (MemoryStream memoryStream = new MemoryStream())
+        //        {
+        //            bitmap.Save(memoryStream, ImageFormat.Png);
+        //            memoryStream.Position = 0;
 
-                    BitmapImage bitmapImage = new BitmapImage();
-                    bitmapImage.BeginInit();
-                    bitmapImage.StreamSource = memoryStream;
-                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.EndInit();
+        //            BitmapImage bitmapImage = new BitmapImage();
+        //            bitmapImage.BeginInit();
+        //            bitmapImage.StreamSource = memoryStream;
+        //            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        //            bitmapImage.EndInit();
 
-                    _screen.Source = bitmapImage;
-                }
-            }));
-        }
+        //            _screen.Source = bitmapImage;
+        //        }
+        //    }));
+        //}
 
         public void GetInputs(List<Tuple<Key, int, bool>> inputs)
         {

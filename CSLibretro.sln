@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSLibretro", "CSLibretro.csproj", "{5A33557F-626A-4808-A868-DC71A0D43E91}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSLibretro", "CSLibretro.csproj", "{219FDE71-5E79-4CAD-8DA7-F4630BA182BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSLibretroTest", "CSLibretroTest\CSLibretroTest.csproj", "{D8FA4DCB-8FE3-4BCC-AF0A-43AF8122FB1C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5A33557F-626A-4808-A868-DC71A0D43E91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A33557F-626A-4808-A868-DC71A0D43E91}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A33557F-626A-4808-A868-DC71A0D43E91}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A33557F-626A-4808-A868-DC71A0D43E91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{219FDE71-5E79-4CAD-8DA7-F4630BA182BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{219FDE71-5E79-4CAD-8DA7-F4630BA182BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{219FDE71-5E79-4CAD-8DA7-F4630BA182BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{219FDE71-5E79-4CAD-8DA7-F4630BA182BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8FA4DCB-8FE3-4BCC-AF0A-43AF8122FB1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8FA4DCB-8FE3-4BCC-AF0A-43AF8122FB1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8FA4DCB-8FE3-4BCC-AF0A-43AF8122FB1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8FA4DCB-8FE3-4BCC-AF0A-43AF8122FB1C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

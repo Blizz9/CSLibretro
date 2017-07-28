@@ -1,7 +1,7 @@
-﻿<Application x:Class="CSLibretro.App"
+﻿<Application x:Class="CSLibretroTest.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:CSLibretro"
+             xmlns:local="clr-namespace:CSLibretroTest"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          
