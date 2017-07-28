@@ -1,41 +1,59 @@
 ﻿using com.PixelismGames.CSLibretro;
 using com.PixelismGames.CSLibretro.Libretro;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace CSLibretro
 {
     public partial class MainWindow : Window
     {
+        private const string DLL_NAME = "snes9x_libretro.dll";
+        //private const string DLL_NAME = "nestopia_libretro.dll";
+        //private const string DLL_NAME = "gambatte_libretro.dll";
+
+        private const string ROM_NAME = "smw.sfc";
+        //private const string ROM_NAME = "smb.nes";
+        //private const string ROM_NAME = "sml.gb";
+
         private Core _core;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _core = new Core("snes9x_libretro.dll");
+            _core = new Core(DLL_NAME);
+
+            //_core.LogPassthroughHandler = logHandlerRaw;
+            _core.LogHandler += logHandler;
             //_core.VideoFramePassthroughHandler = videoFrameHandlerRaw;
             _core.VideoFrameHandler += videoFrameHandler;
-            _core.Load("smw.sfc");
 
-            byte[] temp = _core.ReadRAM(130000);
+            _core.Load(ROM_NAME);
 
             Task task = Task.Run(new Action(() => { _core.Run(); }));
+        }
+
+        private void logHandlerRaw(LogLevel level, string formatString, params IntPtr[] arguments)
+        {
+        }
+
+        private void logHandler(LogLevel level, string message)
+        {
         }
 
         private void videoFrameHandlerRaw(IntPtr data, uint width, uint height, uint stride)
         {
         }
 
-        private void videoFrameHandler(byte[] frameBuffer)
+        private void videoFrameHandler(int width, int height, byte[] frameBuffer)
         {
-        }
-
-        private void logCallback(LogLevel level, string formatString, params IntPtr[] arguments)
-        {
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                _screen.Source = BitmapSource.Create(width, height, 300, 300, PixelFormats.Bgr565, BitmapPalettes.Gray256, frameBuffer, (width * 2));
+            }));
         }
 
         //public void SetScreen(Bitmap bitmap)
@@ -58,19 +76,19 @@ namespace CSLibretro
         //    }));
         //}
 
-        public void GetInputs(List<Tuple<Key, int, bool>> inputs)
-        {
-            Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                for (int i = (inputs.Count - 1); i >= 0; i--)
-                {
-                    if (Keyboard.IsKeyDown(inputs[i].Item1))
-                    {
-                        inputs.Add(new Tuple<Key, int, bool>(inputs[i].Item1, inputs[i].Item2, true));
-                        inputs.RemoveAt(i);
-                    }
-                }
-            }));
-        }
+        //public void GetInputs(List<Tuple<Key, int, bool>> inputs)
+        //{
+        //    Application.Current.Dispatcher.Invoke(new Action(() =>
+        //    {
+        //        for (int i = (inputs.Count - 1); i >= 0; i--)
+        //        {
+        //            if (Keyboard.IsKeyDown(inputs[i].Item1))
+        //            {
+        //                inputs.Add(new Tuple<Key, int, bool>(inputs[i].Item1, inputs[i].Item2, true));
+        //                inputs.RemoveAt(i);
+        //            }
+        //        }
+        //    }));
+        //}
     }
 }

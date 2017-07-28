@@ -8,7 +8,6 @@ using System.Threading;
 namespace com.PixelismGames.CSLibretro
 {
     // TODO : figure out if I can find the PC, ROM, and whether I can write to it or not
-    // TOOD : try this new and improved core in Unity
     public class Core
     {
         private APIVersionSignature _apiVersion;
@@ -39,17 +38,19 @@ namespace com.PixelismGames.CSLibretro
         private string _libretroDLLPath;
         private IntPtr _libretroDLL;
 
-        private Stopwatch _timer;
+        private Stopwatch _frameTimer;
         private long _framePeriodNanoseconds;
-
-        private IntPtr _ramAddress;
-        private int _ramSize;
+        private long _frameLeftoverNanoseconds;
 
         private SystemInfo _systemInfo;
         private SystemAVInfo _systemAVInfo;
 
+        private IntPtr _ramAddress;
+        private int _ramSize;
+
         public bool IsRunning;
         public long FrameCount = 0;
+
         public PixelFormat PixelFormat = PixelFormat.Unknown;
 
         public event Action<short, short> AudioSampleHandler;
@@ -57,7 +58,7 @@ namespace com.PixelismGames.CSLibretro
         public event Action InputPollHandler;
         public event Action InputStateHandler;
         public event Action<LogLevel, string> LogHandler;
-        public event Action<byte[]> VideoFrameHandler;
+        public event Action<int, int, byte[]> VideoFrameHandler;
 
         public AudioSampleBatchHandler AudioSampleBatchPassthroughHandler;
         public InputStateHandler InputStatePassthroughHandler;
@@ -105,6 +106,8 @@ namespace com.PixelismGames.CSLibretro
 
         public Core(string libretroDLLPath)
         {
+            _frameTimer = new Stopwatch();
+
             _libretroDLLPath = libretroDLLPath;
             _libretroDLL = Win32API.LoadLibrary(libretroDLLPath);
 
@@ -185,39 +188,53 @@ namespace com.PixelismGames.CSLibretro
         {
             IsRunning = true;
 
-            _timer = new Stopwatch();
-
-            long frameLeftoverNanoseconds = 0;
-
             while (IsRunning)
             {
-                _timer.Start();
+                StartFrameTiming();
 
                 _run();
 
                 FrameCount++;
 
-                _timer.Stop();
-
-                long frameElapsedNanoseconds = (long)(((double)_timer.ElapsedTicks / (double)Stopwatch.Frequency) * 1000000000);
-                frameLeftoverNanoseconds += _framePeriodNanoseconds - frameElapsedNanoseconds;
-                if (frameLeftoverNanoseconds > 0)
-                {
-                    Thread.Sleep((int)(frameLeftoverNanoseconds / 1000000));
-                    frameLeftoverNanoseconds %= 1000000;
-                }
-                else
-                {
-                    frameLeftoverNanoseconds = 0;
-                }
-
-                _timer.Reset();
+                StopFrameTiming();
+                SleepRemainingFrameTime();
             }
         }
 
         public void RunFrame()
         {
             _run();
+        }
+
+        #endregion
+
+        #region Frame Timing
+
+        public void StartFrameTiming()
+        {
+            _frameTimer.Reset();
+            _frameTimer.Start();
+        }
+
+        public void StopFrameTiming()
+        {
+            _frameTimer.Stop();
+        }
+
+        public void SleepRemainingFrameTime()
+        {
+            long frameElapsedNanoseconds = (long)(((double)_frameTimer.ElapsedTicks / (double)Stopwatch.Frequency) * 1000000000);
+            _frameLeftoverNanoseconds += _framePeriodNanoseconds - frameElapsedNanoseconds;
+
+            if (_frameLeftoverNanoseconds > 0)
+            {
+                Thread.Sleep((int)(_frameLeftoverNanoseconds / 1000000));
+                _frameLeftoverNanoseconds %= 1000000;
+            }
+            else
+            {
+                _frameLeftoverNanoseconds = 0;
+            }
         }
 
         #endregion
@@ -249,7 +266,8 @@ namespace com.PixelismGames.CSLibretro
 
         private void audioSampleCallback(short left, short right)
         {
-            AudioSampleHandler?.Invoke(left, right);
+            if (AudioSampleHandler != null)
+                AudioSampleHandler(left, right);
         }
 
         private uint audioSampleBatchCallback(IntPtr data, uint frames)
@@ -295,7 +313,8 @@ namespace com.PixelismGames.CSLibretro
 
         private void inputPollCallback()
         {
-            InputPollHandler?.Invoke();
+            if (InputPollHandler != null)
+                InputPollHandler();
         }
 
         private short inputStateCallback(uint port, uint device, uint index, uint id)
@@ -341,21 +360,26 @@ namespace com.PixelismGames.CSLibretro
             if (VideoFrameHandler != null)
             {
                 int rowSize = (int)width * sizeof(short); // this will be different depending on pixel format
-
-                // note: if the row size equals the pitch, we can do a single copy - add code if this case is found
-                //       if the data also contains the back buffer, we have to rip out just the first frame
-
                 int size = (int)height * rowSize;
                 byte[] frameBuffer = new byte[size];
 
-                for (int i = 0; i < height; i++)
+                if (rowSize == (int)pitch)
                 {
-                    IntPtr rowAddress = (IntPtr)((long)data + (i * (int)pitch));
-                    int newRowIndex = i * rowSize;
-                    Marshal.Copy(rowAddress, frameBuffer, newRowIndex, rowSize);
+                    Marshal.Copy(data, frameBuffer, 0, size);
+                }
+                else
+                {
+                    // if the data also contains the back buffer, we have to rip out just the first frame
+
+                    for (int i = 0; i < height; i++)
+                    {
+                        IntPtr rowAddress = (IntPtr)((long)data + (i * (int)pitch));
+                        int newRowIndex = i * rowSize;
+                        Marshal.Copy(rowAddress, frameBuffer, newRowIndex, rowSize);
+                    }
                 }
 
-                VideoFrameHandler(frameBuffer);
+                VideoFrameHandler((int)width, (int)height, frameBuffer);
             }
         }
 
