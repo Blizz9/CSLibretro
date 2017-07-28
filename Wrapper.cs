@@ -7,7 +7,6 @@ using System.Threading;
 
 namespace com.PixelismGames.CSLibretro
 {
-    // TODO : figure out if I can find the PC, ROM, and whether I can write to it or not
     public class Wrapper
     {
         private const string DLL_NAME = "snes9x_libretro.dll";

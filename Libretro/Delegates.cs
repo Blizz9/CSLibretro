@@ -7,10 +7,10 @@ namespace com.PixelismGames.CSLibretro.Libretro
     public delegate uint APIVersionSignature();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate IntPtr GetMemoryDataSignature(uint id);
+    public delegate IntPtr GetMemoryDataSignature(MemoryType id);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate uint GetMemorySizeSignature(uint id);
+    public delegate uint GetMemorySizeSignature(MemoryType id);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void GetSystemAVInfoSignature(out SystemAVInfo systemAVInfo);
@@ -63,13 +63,13 @@ namespace com.PixelismGames.CSLibretro.Libretro
     public delegate uint AudioSampleBatchHandler(IntPtr data, uint frames);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate bool EnvironmentHandler(uint command, IntPtr data);
+    public delegate bool EnvironmentHandler(uint command, IntPtr data); // eventually an enum can be used here
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void InputPollHandler();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate short InputStateHandler(uint port, uint device, uint index, uint id);
+    public delegate short InputStateHandler(uint port, uint device, uint index, uint id); // some enums can be used here
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void LogHandler(LogLevel level, string fmt, params IntPtr[] arguments);

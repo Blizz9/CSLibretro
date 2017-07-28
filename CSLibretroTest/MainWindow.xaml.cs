@@ -1,4 +1,5 @@
 ﻿using com.PixelismGames.CSLibretro;
+using com.PixelismGames.CSLibretro.Libretro;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,15 +10,30 @@ namespace CSLibretro
 {
     public partial class MainWindow : Window
     {
-        private Wrapper _csLibretroWrapper;
+        private Core _core;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            //_csLibretroWrapper = new Wrapper(SetScreen, GetInputs);
-            _csLibretroWrapper = new Wrapper();
-            Task task = Task.Run(new Action(() => { _csLibretroWrapper.Run(); }));
+            _core = new Core("snes9x_libretro.dll");
+            //_core.VideoFramePassthroughHandler = videoFrameHandlerRaw;
+            _core.VideoFrameHandler += videoFrameHandler;
+            _core.Initialize("smw.sfc");
+
+            Task task = Task.Run(new Action(() => { _core.Run(); }));
+        }
+
+        private void videoFrameHandlerRaw(IntPtr data, uint width, uint height, uint stride)
+        {
+        }
+
+        private void videoFrameHandler(byte[] frameBuffer)
+        {
+        }
+
+        private void logCallback(LogLevel level, string formatString, params IntPtr[] arguments)
+        {
         }
 
         //public void SetScreen(Bitmap bitmap)

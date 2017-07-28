@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CSLibretro</RootNamespace>
     <AssemblyName>CSLibretro</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -70,9 +70,11 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core.cs" />
     <Compile Include="Libretro\Delegates.cs" />
     <Compile Include="Libretro\Enums\EnvironmentCommand.cs" />
     <Compile Include="Libretro\Enums\LogLevel.cs" />
+    <Compile Include="Libretro\Enums\MemoryType.cs" />
     <Compile Include="Libretro\Structs\GameGeometry.cs" />
     <Compile Include="Libretro\Structs\GameInfo.cs" />
     <Compile Include="Libretro\Structs\LogCallback.cs" />
