@@ -7,6 +7,9 @@ namespace com.PixelismGames.CSLibretro.Libretro
     public delegate uint APIVersionSignature();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void DeinitSignature();
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate IntPtr GetMemoryDataSignature(MemoryType id);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -25,6 +28,9 @@ namespace com.PixelismGames.CSLibretro.Libretro
     public delegate bool LoadGameSignature(ref GameInfo gameInfo);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ResetSignature();
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void RunSignature();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -40,6 +46,9 @@ namespace com.PixelismGames.CSLibretro.Libretro
     public delegate void SetAudioSampleBatchSignature(AudioSampleBatchHandler audioSampleBatchHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetControllerPortDeviceSignature(uint port, uint device);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void SetEnvironmentSignature(EnvironmentHandler environmentHandler);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -50,6 +59,9 @@ namespace com.PixelismGames.CSLibretro.Libretro
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void SetVideoRefreshSignature(VideoRefreshHandler videoRefreshHandler);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void UnloadGameSignature();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate bool UnserializeSignature(IntPtr data, uint size);

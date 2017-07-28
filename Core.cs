@@ -1,6 +1,8 @@
 ﻿using com.PixelismGames.CSLibretro.Libretro;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -11,21 +13,25 @@ namespace com.PixelismGames.CSLibretro
     public class Core
     {
         private APIVersionSignature _apiVersion;
+        private DeinitSignature _deinit;
         private GetMemoryDataSignature _getMemoryData;
         private GetMemorySizeSignature _getMemorySize;
         private GetSystemAVInfoSignature _getSystemAVInfo;
         private GetSystemInfoSignature _getSystemInfo;
         private InitSignature _init;
         private LoadGameSignature _loadGame;
+        private ResetSignature _reset;
         private RunSignature _run;
         private SerializeSignature _serialize;
         private SerializeSizeSignature _serializeSize;
         private SetAudioSampleSignature _setAudioSample;
         private SetAudioSampleBatchSignature _setAudioSampleBatch;
+        private SetControllerPortDeviceSignature _setControllerPortDevice;
         private SetEnvironmentSignature _setEnvironment;
         private SetInputPollSignature _setInputPoll;
         private SetInputStateSignature _setInputState;
         private SetVideoRefreshSignature _setVideoRefresh;
+        private UnloadGameSignature _unloadGame;
         private UnserializeSignature _unserialize;
 
         private AudioSampleHandler _audioSampleHandler;
@@ -45,6 +51,8 @@ namespace com.PixelismGames.CSLibretro
         private SystemInfo _systemInfo;
         private SystemAVInfo _systemAVInfo;
 
+        private bool _variablesDirty;
+
         private IntPtr _ramAddress;
         private int _ramSize;
 
@@ -52,6 +60,8 @@ namespace com.PixelismGames.CSLibretro
         public long FrameCount = 0;
 
         public PixelFormat PixelFormat = PixelFormat.Unknown;
+        public List<Variable> Variables;
+        public List<InputDescriptor> Inputs;
 
         public event Action<short, short> AudioSampleHandler;
         public event Action AudioSampleBatchHandler;
@@ -108,25 +118,34 @@ namespace com.PixelismGames.CSLibretro
         {
             _frameTimer = new Stopwatch();
 
+            _variablesDirty = true;
+
+            Variables = new List<Variable>();
+            Inputs = new List<InputDescriptor>();
+
             _libretroDLLPath = libretroDLLPath;
             _libretroDLL = Win32API.LoadLibrary(libretroDLLPath);
 
             _apiVersion = GetDelegate<APIVersionSignature>("retro_api_version");
+            _deinit = GetDelegate<DeinitSignature>("retro_deinit");
             _getMemoryData = GetDelegate<GetMemoryDataSignature>("retro_get_memory_data");
             _getMemorySize = GetDelegate<GetMemorySizeSignature>("retro_get_memory_size");
             _getSystemAVInfo = GetDelegate<GetSystemAVInfoSignature>("retro_get_system_av_info");
             _getSystemInfo = GetDelegate<GetSystemInfoSignature>("retro_get_system_info");
             _init = GetDelegate<InitSignature>("retro_init");
             _loadGame = GetDelegate<LoadGameSignature>("retro_load_game");
+            _reset = GetDelegate<ResetSignature>("retro_reset");
             _run = GetDelegate<RunSignature>("retro_run");
             _serialize = GetDelegate<SerializeSignature>("retro_serialize");
             _serializeSize = GetDelegate<SerializeSizeSignature>("retro_serialize_size");
             _setAudioSample = GetDelegate<SetAudioSampleSignature>("retro_set_audio_sample");
             _setAudioSampleBatch = GetDelegate<SetAudioSampleBatchSignature>("retro_set_audio_sample_batch");
+            _setControllerPortDevice = GetDelegate<SetControllerPortDeviceSignature>("retro_set_controller_port_device");
             _setEnvironment = GetDelegate<SetEnvironmentSignature>("retro_set_environment");
             _setInputPoll = GetDelegate<SetInputPollSignature>("retro_set_input_poll");
             _setInputState = GetDelegate<SetInputStateSignature>("retro_set_input_state");
             _setVideoRefresh = GetDelegate<SetVideoRefreshSignature>("retro_set_video_refresh");
+            _unloadGame = GetDelegate<UnloadGameSignature>("retro_unload_game");
             _unserialize = GetDelegate<UnserializeSignature>("retro_unserialize");
         }
 
@@ -289,12 +308,58 @@ namespace com.PixelismGames.CSLibretro
         {
             switch ((EnvironmentCommand)command)
             {
+                case EnvironmentCommand.GetOverscan:
+                    Marshal.WriteByte(data, 0, Convert.ToByte(true));
+                    return (true);
+
                 case EnvironmentCommand.GetCanDupe:
-                    Marshal.WriteByte(data, 0, 1);
+                    Marshal.WriteByte(data, 0, Convert.ToByte(true));
+                    return (true);
+
+                case EnvironmentCommand.SetPerformanceLevel:
+                    uint temp = (uint)Marshal.ReadInt32(data); // this isn't being stored anywhere
+                    return (true);
+
+                case EnvironmentCommand.GetSystemDirectory:
+                    data = Marshal.StringToHGlobalAnsi(Directory.GetCurrentDirectory());
                     return (true);
 
                 case EnvironmentCommand.SetPixelFormat:
                     PixelFormat = (PixelFormat)Marshal.ReadInt32(data);
+                    return (true);
+
+                case EnvironmentCommand.SetInputDescriptors:
+                    IntPtr inputDescriptorAddress = data;
+                    while (true)
+                    {
+                        InputDescriptor inputDescriptor = (InputDescriptor)Marshal.PtrToStructure(inputDescriptorAddress, typeof(InputDescriptor));
+                        if (inputDescriptor.Description == null)
+                            break;
+                        Inputs.Add(inputDescriptor);
+                        inputDescriptorAddress = (IntPtr)((long)inputDescriptorAddress + Marshal.SizeOf(inputDescriptor));
+                    }
+                    return (true);
+
+                case EnvironmentCommand.GetVariable:
+                    Variable variable = (Variable)Marshal.PtrToStructure(data, typeof(Variable));
+                    data = Marshal.StringToHGlobalAnsi(variable.Value);
+                    return (false);
+
+                case EnvironmentCommand.SetVariables:
+                    IntPtr variableAddress = data;
+                    while (true)
+                    {
+                        variable = (Variable)Marshal.PtrToStructure(variableAddress, typeof(Variable));
+                        if (variable.Key == null)
+                            break;
+                        Variables.Add(variable);
+                        variableAddress = (IntPtr)((long)variableAddress + Marshal.SizeOf(variable));
+                    }
+                    return (true);
+
+                case EnvironmentCommand.GetVariableUpdate:
+                    Marshal.WriteByte(data, 0, Convert.ToByte(_variablesDirty));
+                    _variablesDirty = false;
                     return (true);
 
                 case EnvironmentCommand.GetLogInterface:
@@ -306,7 +371,22 @@ namespace com.PixelismGames.CSLibretro
                     Marshal.StructureToPtr(logCallbackStruct, data, false);
                     return (true);
 
+                case EnvironmentCommand.GetSaveDirectory:
+                    data = Marshal.StringToHGlobalAnsi(null);
+                    return (true);
+
+                case EnvironmentCommand.SetMemoryMaps:
+                    return (true);
+
+                case EnvironmentCommand.SetGeometry:
+                    GameGeometry gameGeometry = (GameGeometry)Marshal.PtrToStructure(data, typeof(GameGeometry));
+                    return (true);
+
+                case EnvironmentCommand.GetCurrentSoftwareFrameBuffer: // not implemented
+                    return (false);
+
                 default:
+                    Debug.WriteLine("Unhandled Environment Command: " + command);
                     return (false);
             }
         }

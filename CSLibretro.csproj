@@ -77,8 +77,10 @@
     <Compile Include="Libretro\Enums\MemoryType.cs" />
     <Compile Include="Libretro\Structs\GameGeometry.cs" />
     <Compile Include="Libretro\Structs\GameInfo.cs" />
+    <Compile Include="Libretro\Structs\InputDescriptor.cs" />
     <Compile Include="Libretro\Structs\LogCallback.cs" />
     <Compile Include="Libretro\Enums\PixelFormat.cs" />
+    <Compile Include="Libretro\Structs\Variable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Libretro\Structs\SystemAVInfo.cs" />
     <Compile Include="Libretro\Structs\SystemInfo.cs" />

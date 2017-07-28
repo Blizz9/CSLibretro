@@ -1,6 +1,7 @@
 ﻿using com.PixelismGames.CSLibretro;
 using com.PixelismGames.CSLibretro.Libretro;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -10,12 +11,12 @@ namespace CSLibretro
 {
     public partial class MainWindow : Window
     {
-        private const string DLL_NAME = "snes9x_libretro.dll";
-        //private const string DLL_NAME = "nestopia_libretro.dll";
+        //private const string DLL_NAME = "snes9x_libretro.dll";
+        private const string DLL_NAME = "fceumm_libretro.dll";
         //private const string DLL_NAME = "gambatte_libretro.dll";
 
-        private const string ROM_NAME = "smw.sfc";
-        //private const string ROM_NAME = "smb.nes";
+        //private const string ROM_NAME = "smw.sfc";
+        private const string ROM_NAME = "smb.nes";
         //private const string ROM_NAME = "sml.gb";
 
         private Core _core;
@@ -42,6 +43,7 @@ namespace CSLibretro
 
         private void logHandler(LogLevel level, string message)
         {
+            Debug.WriteLine(string.Format("[{0}] {1}", (int)level, message));
         }
 
         private void videoFrameHandlerRaw(IntPtr data, uint width, uint height, uint stride)
