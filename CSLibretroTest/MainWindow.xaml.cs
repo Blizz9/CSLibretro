@@ -13,6 +13,7 @@ namespace CSLibretro
     {
         //private const string DLL_NAME = "snes9x_libretro.dll";
         private const string DLL_NAME = "fceumm_libretro.dll";
+        //private const string DLL_NAME = "nestopia_libretro.dll";
         //private const string DLL_NAME = "gambatte_libretro.dll";
 
         //private const string ROM_NAME = "smw.sfc";

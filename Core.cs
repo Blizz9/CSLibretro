@@ -3,13 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
 namespace com.PixelismGames.CSLibretro
 {
-    // TODO : figure out if I can find the PC, ROM, and whether I can write to it or not
+    // TODO : figure out if I can find the PC, ROM, and whether I can write to it or not (might be done with Memory maps?)
+    // TODO : change environment handling to a map and breakout into individual methods
     public class Core
     {
         private APIVersionSignature _apiVersion;
@@ -342,8 +344,12 @@ namespace com.PixelismGames.CSLibretro
 
                 case EnvironmentCommand.GetVariable:
                     Variable variable = (Variable)Marshal.PtrToStructure(data, typeof(Variable));
-                    data = Marshal.StringToHGlobalAnsi(variable.Value);
-                    return (false);
+                    string firstValue = Variables.Where(v => v.Key == variable.Key).Select(v => v.Value).First();
+                    firstValue = firstValue.Substring(firstValue.IndexOf(';') + 2);
+                    firstValue = firstValue.Substring(0, firstValue.IndexOf('|'));
+                    variable.Value = firstValue;
+                    Marshal.StructureToPtr(variable, data, false);
+                    return (true);
 
                 case EnvironmentCommand.SetVariables:
                     IntPtr variableAddress = data;
@@ -375,7 +381,7 @@ namespace com.PixelismGames.CSLibretro
                     data = Marshal.StringToHGlobalAnsi(null);
                     return (true);
 
-                case EnvironmentCommand.SetMemoryMaps:
+                case EnvironmentCommand.SetMemoryMaps: // not saved anywhere
                     return (true);
 
                 case EnvironmentCommand.SetGeometry:
