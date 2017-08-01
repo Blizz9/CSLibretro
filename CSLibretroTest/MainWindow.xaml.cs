@@ -2,6 +2,7 @@
 using com.PixelismGames.CSLibretro.Libretro;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -55,6 +56,12 @@ namespace CSLibretro
         {
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
+                if (_core.FrameCount == 240)
+                    _core.Inputs.Where(i => i.JoypadInputID == JoypadInputID.Start).First().Value = 1;
+
+                if (_core.FrameCount == 300)
+                    _core.Inputs.Where(i => i.JoypadInputID == JoypadInputID.Start).First().Value = 0;
+
                 _screen.Source = BitmapSource.Create(width, height, 300, 300, PixelFormats.Bgr565, BitmapPalettes.Gray256, frameBuffer, (width * 2));
             }));
         }

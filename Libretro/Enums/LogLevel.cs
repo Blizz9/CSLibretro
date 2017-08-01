@@ -7,5 +7,5 @@
         Warn = 2,
         Error = 3,
         Dummy = int.MaxValue
-    };
+    }
 }

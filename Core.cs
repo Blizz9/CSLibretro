@@ -55,6 +55,7 @@ namespace com.PixelismGames.CSLibretro
 
         private bool _variablesDirty;
 
+        private int _stateSize;
         private IntPtr _ramAddress;
         private int _ramSize;
 
@@ -63,12 +64,12 @@ namespace com.PixelismGames.CSLibretro
 
         public PixelFormat PixelFormat = PixelFormat.Unknown;
         public List<Variable> Variables;
-        public List<InputDescriptor> Inputs;
+        public List<Input> Inputs;
 
         public event Action<short, short> AudioSampleHandler;
-        public event Action AudioSampleBatchHandler;
+        public event Action<short[]> AudioSampleBatchHandler;
         public event Action InputPollHandler;
-        public event Action InputStateHandler;
+        public event Func<int, Device, int, short> InputStateHandler;
         public event Action<LogLevel, string> LogHandler;
         public event Action<int, int, byte[]> VideoFrameHandler;
 
@@ -123,7 +124,7 @@ namespace com.PixelismGames.CSLibretro
             _variablesDirty = true;
 
             Variables = new List<Variable>();
-            Inputs = new List<InputDescriptor>();
+            Inputs = new List<Input>();
 
             _libretroDLLPath = libretroDLLPath;
             _libretroDLL = Win32API.LoadLibrary(libretroDLLPath);
@@ -197,6 +198,7 @@ namespace com.PixelismGames.CSLibretro
 
             _framePeriodNanoseconds = (long)(1000000000 / _systemAVInfo.Timing.FPS);
 
+            _stateSize = (int)_serializeSize();
             _ramAddress = _getMemoryData(MemoryType.RAM);
             _ramSize = (int)_getMemorySize(MemoryType.RAM);
         }
@@ -225,6 +227,8 @@ namespace com.PixelismGames.CSLibretro
         public void RunFrame()
         {
             _run();
+
+            FrameCount++;
         }
 
         #endregion
@@ -260,29 +264,6 @@ namespace com.PixelismGames.CSLibretro
 
         #endregion
 
-        #region Memory
-
-        public byte[] ReadRAM(int offset = 0, int? length = null)
-        {
-            if (!length.HasValue)
-                length = _ramSize - offset;
-
-            byte[] ram = new byte[length.Value];
-
-            IntPtr ramAddressOffset = (IntPtr)((long)_ramAddress + offset);
-            Marshal.Copy(ramAddressOffset, ram, 0, length.Value);
-
-            return (ram);
-        }
-
-        public void WriteRAM(byte[] data, int offset = 0)
-        {
-            IntPtr ramAddressOffset = (IntPtr)((long)_ramAddress + offset);
-            Marshal.Copy(data, 0, ramAddressOffset, data.Length);
-        }
-
-        #endregion
-
         #region Handlers
 
         private void audioSampleCallback(short left, short right)
@@ -293,16 +274,15 @@ namespace com.PixelismGames.CSLibretro
 
         private uint audioSampleBatchCallback(IntPtr data, uint frames)
         {
-            uint returnValue = 0;
-
             if (AudioSampleBatchHandler != null)
             {
-                returnValue = 0; // do stuff here presumably
+                short[] audioFrames = new short[frames * 2];
+                Marshal.Copy(data, audioFrames, 0, ((int)frames * 2));
 
-                AudioSampleBatchHandler();
+                AudioSampleBatchHandler(audioFrames);
             }
 
-            return (returnValue);
+            return (frames);
         }
 
         // build a way for the user of core to passthrough their choice of commands to handle
@@ -337,7 +317,7 @@ namespace com.PixelismGames.CSLibretro
                         InputDescriptor inputDescriptor = (InputDescriptor)Marshal.PtrToStructure(inputDescriptorAddress, typeof(InputDescriptor));
                         if (inputDescriptor.Description == null)
                             break;
-                        Inputs.Add(inputDescriptor);
+                        Inputs.Add(new Input(inputDescriptor));
                         inputDescriptorAddress = (IntPtr)((long)inputDescriptorAddress + Marshal.SizeOf(inputDescriptor));
                     }
                     return (true);
@@ -407,12 +387,10 @@ namespace com.PixelismGames.CSLibretro
         {
             short returnValue = 0;
 
-            if (InputStateHandler != null)
-            {
-                returnValue = 0; // do stuff here presumably
-
-                InputStateHandler();
-            }
+            if (InputStateHandler == null)
+                returnValue = Inputs.Where(i => (i.Port == (int)port) && (i.Device == (Device)device) && (i.RawInputID == (int)id)).First().Value;
+            else
+                returnValue = InputStateHandler((int)port, (Device)device, (int)id);
 
             return (returnValue);
         }
@@ -467,6 +445,53 @@ namespace com.PixelismGames.CSLibretro
 
                 VideoFrameHandler((int)width, (int)height, frameBuffer);
             }
+        }
+
+        #endregion
+
+        #region State
+
+        public void LoadState(string stateFilePath)
+        {
+            byte[] state = File.ReadAllBytes(stateFilePath);
+
+            GCHandle pinnedState = GCHandle.Alloc(state, GCHandleType.Pinned);
+            _unserialize(pinnedState.AddrOfPinnedObject(), (uint)state.Length);
+            pinnedState.Free();
+        }
+
+        public void SaveState(string stateFilePath)
+        {
+            byte[] state = new byte[_stateSize];
+
+            GCHandle pinnedState = GCHandle.Alloc(state, GCHandleType.Pinned);
+            _serialize(pinnedState.AddrOfPinnedObject(), (uint)state.Length);
+            pinnedState.Free();
+
+            File.WriteAllBytes(stateFilePath, state);
+        }
+
+        #endregion
+
+        #region Memory
+
+        public byte[] ReadRAM(int offset = 0, int? length = null)
+        {
+            if (!length.HasValue)
+                length = _ramSize - offset;
+
+            byte[] ram = new byte[length.Value];
+
+            IntPtr ramAddressOffset = (IntPtr)((long)_ramAddress + offset);
+            Marshal.Copy(ramAddressOffset, ram, 0, length.Value);
+
+            return (ram);
+        }
+
+        public void WriteRAM(byte[] data, int offset = 0)
+        {
+            IntPtr ramAddressOffset = (IntPtr)((long)_ramAddress + offset);
+            Marshal.Copy(data, 0, ramAddressOffset, data.Length);
         }
 
         #endregion
