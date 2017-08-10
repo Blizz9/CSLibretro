@@ -83,8 +83,9 @@ namespace com.PixelismGames.CSLibretro.Libretro
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate short InputStateHandler(uint port, uint device, uint index, uint id); // some enums can be used here
 
+    // very nasty solution here, maybe there is a better one; "[MarshalAs(UnmanagedType.LPArray, SizeConst = 10)] params IntPtr[] arguments" worked in editor, but not once built <shrug>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void LogHandler(LogLevel level, string fmt, [MarshalAs(UnmanagedType.LPArray, SizeConst = 10)] params IntPtr[] arguments);
+    public delegate void LogHandler(LogLevel level, string fmt, IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5, IntPtr arg6, IntPtr arg7, IntPtr arg8, IntPtr arg9);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void VideoRefreshHandler(IntPtr data, uint width, uint height, uint pitch);

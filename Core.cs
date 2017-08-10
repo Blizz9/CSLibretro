@@ -55,7 +55,6 @@ namespace com.PixelismGames.CSLibretro
 
         private bool _variablesDirty;
 
-        private int _stateSize;
         private IntPtr _ramAddress;
         private int _ramSize;
 
@@ -65,6 +64,7 @@ namespace com.PixelismGames.CSLibretro
         public PixelFormat PixelFormat = PixelFormat.Unknown;
         public List<Variable> Variables;
         public List<Input> Inputs;
+        public int StateSize;
 
         public event Action<short, short> AudioSampleHandler;
         public event Action<short[]> AudioSampleBatchHandler;
@@ -198,7 +198,7 @@ namespace com.PixelismGames.CSLibretro
 
             _framePeriodNanoseconds = (long)(1000000000 / _systemAVInfo.Timing.FPS);
 
-            _stateSize = (int)_serializeSize();
+            StateSize = (int)_serializeSize();
             _ramAddress = _getMemoryData(MemoryType.RAM);
             _ramSize = (int)_getMemorySize(MemoryType.RAM);
         }
@@ -395,7 +395,7 @@ namespace com.PixelismGames.CSLibretro
             return (returnValue);
         }
 
-        private void logCallback(LogLevel level, string fmt, params IntPtr[] arguments)
+        private void logCallback(LogLevel level, string fmt, IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5, IntPtr arg6, IntPtr arg7, IntPtr arg8, IntPtr arg9)
         {
             if (LogHandler != null)
             {
@@ -403,7 +403,7 @@ namespace com.PixelismGames.CSLibretro
 
                 do
                 {
-                    int length = Win32API._snprintf(logMessage, (uint)logMessage.Capacity, fmt, arguments);
+                    int length = Win32API._snprintf(logMessage, (uint)logMessage.Capacity, fmt, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 
                     if ((length <= 0) || (length >= logMessage.Capacity))
                     {
@@ -462,13 +462,23 @@ namespace com.PixelismGames.CSLibretro
 
         public void SaveState(string stateFilePath)
         {
-            byte[] state = new byte[_stateSize];
+            byte[] state = new byte[StateSize];
 
             GCHandle pinnedState = GCHandle.Alloc(state, GCHandleType.Pinned);
             _serialize(pinnedState.AddrOfPinnedObject(), (uint)state.Length);
             pinnedState.Free();
 
             File.WriteAllBytes(stateFilePath, state);
+        }
+
+        public bool SerializePassthrough(IntPtr data, uint size)
+        {
+            return (_serialize(data, size));
+        }
+
+        public bool UnserializePassthrough(IntPtr data, uint size)
+        {
+            return (_unserialize(data, size));
         }
 
         #endregion

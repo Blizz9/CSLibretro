@@ -13,6 +13,6 @@ namespace com.PixelismGames.CSLibretro
         public static extern IntPtr GetProcAddress(IntPtr dll, string methodName);
 
         [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int _snprintf(StringBuilder buffer, uint count, string format, params IntPtr[] arguments);
+        public static extern int _snprintf(StringBuilder buffer, uint count, string format, IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5, IntPtr arg6, IntPtr arg7, IntPtr arg8, IntPtr arg9);
     }
 }
