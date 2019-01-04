@@ -14,14 +14,16 @@ namespace CSLibretro
     {
         //private const string DLL_NAME = "snes9x_libretro.dll";
         //private const string DLL_NAME = "fceumm_libretro.dll";
-        private const string DLL_NAME = "nestopia_libretro.dll";
+        //private const string DLL_NAME = "nestopia_libretro.dll";
         //private const string DLL_NAME = "gambatte_libretro.dll";
         //private const string DLL_NAME = "genesis_plus_gx_libretro";
+        private const string DLL_NAME = "mednafen_psx_libretro";
 
         //private const string ROM_NAME = "smw.sfc";
-        private const string ROM_NAME = "smb.nes";
-        //private const string ROM_NAME = "sml.gb";
+        //private const string ROM_NAME = "smb.nes";
+        //private const string ROM_NAME = "tetris.gb";
         //private const string ROM_NAME = "sonic.md";
+        private const string ROM_NAME = @"D:\Development\C#\CSLibretro\CSLibretroTest\bin\x64\Debug\crash.cue";
 
         private Core _core;
 

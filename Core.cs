@@ -328,11 +328,16 @@ namespace com.PixelismGames.CSLibretro
 
                 case EnvironmentCommand.GetVariable:
                     Variable variable = (Variable)Marshal.PtrToStructure(data, typeof(Variable));
-                    string firstValue = Variables.Where(v => v.Key == variable.Key).Select(v => v.Value).First();
-                    firstValue = firstValue.Substring(firstValue.IndexOf(';') + 2);
-                    firstValue = firstValue.Substring(0, firstValue.IndexOf('|'));
-                    variable.Value = firstValue;
-                    Marshal.StructureToPtr(variable, data, false);
+                    IEnumerable<string> matchedVariables = Variables.Where(v => v.Key == variable.Key).Select(v => v.Value);
+                    if (matchedVariables.Any())
+                    {
+                        string firstValue = Variables.Where(v => v.Key == variable.Key).Select(v => v.Value).First();
+                        firstValue = firstValue.Substring(firstValue.IndexOf(';') + 2);
+                        if (firstValue.Contains("|"))
+                            firstValue = firstValue.Substring(0, firstValue.IndexOf('|'));
+                        variable.Value = firstValue;
+                        Marshal.StructureToPtr(variable, data, false);
+                    }
                     return (true);
 
                 case EnvironmentCommand.SetVariables:
@@ -425,6 +430,9 @@ namespace com.PixelismGames.CSLibretro
 
         private void videoRefreshCallback(IntPtr data, uint width, uint height, uint pitch)
         {
+            if (data == IntPtr.Zero)
+                return;
+
             if (VideoFrameHandler != null)
             {
                 int pixelMemorySize;
