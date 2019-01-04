@@ -89,7 +89,6 @@
     <Compile Include="Libretro\Structs\SystemInfo.cs" />
     <Compile Include="Libretro\Structs\SystemTiming.cs" />
     <Compile Include="Win32API.cs" />
-    <Compile Include="Wrapper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

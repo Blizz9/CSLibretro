@@ -177,15 +177,19 @@ namespace com.PixelismGames.CSLibretro
 
             _setEnvironment(_environmentHandler);
             _setVideoRefresh(_videoRefreshHandler);
-            _setAudioSample(_audioSampleHandler);
-            _setAudioSampleBatch(_audioSampleBatchHandler);
             _setInputPoll(_inputPollHandler);
             _setInputState(_inputStateHandler);
+            _setAudioSample(_audioSampleHandler);
+            _setAudioSampleBatch(_audioSampleBatchHandler);
 
             _init();
 
-            GameInfo gameInfo = new GameInfo() { Path = romPath, Data = IntPtr.Zero, Size = 0, Meta = null };
+            byte[] romBytes = File.ReadAllBytes(romPath);
+            IntPtr romBytesPointer = Marshal.AllocHGlobal(romBytes.Length);
+            Marshal.Copy(romBytes, 0, romBytesPointer, romBytes.Length);
+            GameInfo gameInfo = new GameInfo() { Path = romPath, Data = romBytesPointer, Size = (uint)romBytes.Length, Meta = null };
             _loadGame(ref gameInfo);
+            Marshal.FreeHGlobal(romBytesPointer);
 
             _systemInfo = new SystemInfo();
             _getSystemInfo(out _systemInfo);
@@ -303,7 +307,7 @@ namespace com.PixelismGames.CSLibretro
                     return (true);
 
                 case EnvironmentCommand.GetSystemDirectory:
-                    data = Marshal.StringToHGlobalAnsi(Directory.GetCurrentDirectory());
+                    Marshal.WriteIntPtr(data, Marshal.StringToHGlobalAnsi(Directory.GetCurrentDirectory()));
                     return (true);
 
                 case EnvironmentCommand.SetPixelFormat:
@@ -358,7 +362,7 @@ namespace com.PixelismGames.CSLibretro
                     return (true);
 
                 case EnvironmentCommand.GetSaveDirectory:
-                    data = Marshal.StringToHGlobalAnsi(null);
+                    Marshal.WriteIntPtr(data, Marshal.StringToHGlobalAnsi(Directory.GetCurrentDirectory()));
                     return (true);
 
                 case EnvironmentCommand.SetMemoryMaps: // not saved anywhere
@@ -423,7 +427,24 @@ namespace com.PixelismGames.CSLibretro
         {
             if (VideoFrameHandler != null)
             {
-                int rowSize = (int)width * sizeof(short); // this will be different depending on pixel format
+                int pixelMemorySize;
+                switch (PixelFormat)
+                {
+                    case PixelFormat.RGB1555:
+                    case PixelFormat.RGB565:
+                        pixelMemorySize = 2;
+                        break;
+
+                    case PixelFormat.XRGB8888:
+                        pixelMemorySize = 4;
+                        break;
+
+                    default:
+                        pixelMemorySize = 4;
+                        break;
+                }
+
+                int rowSize = (int)width * pixelMemorySize;
                 int size = (int)height * rowSize;
                 byte[] frameBuffer = new byte[size];
 

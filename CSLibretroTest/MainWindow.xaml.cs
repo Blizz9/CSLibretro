@@ -13,13 +13,15 @@ namespace CSLibretro
     public partial class MainWindow : Window
     {
         //private const string DLL_NAME = "snes9x_libretro.dll";
-        private const string DLL_NAME = "fceumm_libretro.dll";
-        //private const string DLL_NAME = "nestopia_libretro.dll";
+        //private const string DLL_NAME = "fceumm_libretro.dll";
+        private const string DLL_NAME = "nestopia_libretro.dll";
         //private const string DLL_NAME = "gambatte_libretro.dll";
+        //private const string DLL_NAME = "genesis_plus_gx_libretro";
 
         //private const string ROM_NAME = "smw.sfc";
         private const string ROM_NAME = "smb.nes";
         //private const string ROM_NAME = "sml.gb";
+        //private const string ROM_NAME = "sonic.md";
 
         private Core _core;
 
@@ -62,7 +64,34 @@ namespace CSLibretro
                 if (_core.FrameCount == 300)
                     _core.Inputs.Where(i => i.JoypadInputID == JoypadInputID.Start).First().Value = 0;
 
-                _screen.Source = BitmapSource.Create(width, height, 300, 300, PixelFormats.Bgr565, BitmapPalettes.Gray256, frameBuffer, (width * 2));
+                int pixelMemorySize;
+                System.Windows.Media.PixelFormat pixelFormat;
+                switch (_core.PixelFormat)
+                {
+                    case com.PixelismGames.CSLibretro.Libretro.PixelFormat.RGB1555:
+                        pixelMemorySize = 2;
+                        pixelFormat = PixelFormats.Bgr555;
+                        break;
+
+                    case com.PixelismGames.CSLibretro.Libretro.PixelFormat.RGB565:
+                        pixelMemorySize = 2;
+                        pixelFormat = PixelFormats.Bgr565;
+                        break;
+
+                    case com.PixelismGames.CSLibretro.Libretro.PixelFormat.XRGB8888:
+                        pixelMemorySize = 4;
+                        pixelFormat = PixelFormats.Bgra32;
+                        for (int i = 3; i < frameBuffer.Length; i += 4)
+                            frameBuffer[i] = 255;
+                        break;
+
+                    default:
+                        pixelMemorySize = 4;
+                        pixelFormat = PixelFormats.Bgra32;
+                        break;
+                }
+
+                _screen.Source = BitmapSource.Create(width, height, 300, 300, pixelFormat, BitmapPalettes.Gray256, frameBuffer, (width * pixelMemorySize));
             }));
         }
 
